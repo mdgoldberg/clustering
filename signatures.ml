@@ -9,6 +9,8 @@ sig
   (*implementation of the matrix itself*)
   type t
 
+  exception  invalid_dimensions
+
   (*creates a matrix out of list of lists*)
   val of_list : elt list list -> t
   
@@ -17,6 +19,13 @@ sig
 
   (*returns an element of the matrix *)
   val get : (int * int) -> t -> elt
+
+  (*returns the dimensions of an array*) 
+  val dimensions : t -> (int * int)
+
+  (*returns the smallest non-zero element of a matrix*)
+  val minimum : t -> elt
+
 end
 
 (*signature for graph clustering algorithms:
@@ -26,7 +35,7 @@ sig
   (*The first argument is an option for the parameters of that
    *specific algorithm. If the algorithm doesn't take in any, just
    * pass in None. *)
-  val cluster: 'a option -> 'b MATRIX.t -> 'b list list
+  val cluster: 'a option -> MATRIX.t -> 'b list list
 end
 
 module type STATS =
@@ -45,7 +54,7 @@ end
 module type TO_GRAPH = 
 sig
 
-  val to_graph : 'a -> 'b list list
+  val to_graph : 'a -> MATRIX.t
 
 end
 
