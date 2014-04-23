@@ -17,6 +17,10 @@ sig
 
   (*returns an element of the matrix *)
   val get : (int * int) -> t -> elt
+
+  (* returns the dimensions of a matrix *)
+  val dimensions : t -> (int * int)
+
 end
 
 (*signature for graph clustering algorithms:
