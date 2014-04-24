@@ -13,7 +13,7 @@ sig
   val default : t
 
   (* Comparison function *)
-  val compare : t -> t -> Ordering.t
+ (* val compare : t -> t -> Ordering.t*)
 
   (* Multiplication function*)
   val multiply : t -> t -> t
@@ -41,8 +41,8 @@ module FloatCompare: COMPARABLE with type t = float =
 struct
   type t = float
   let default = 0.0
-  let compare a b = Ordering.of_float (a -. b)
-  let multiply a b = a * b
+  (*let compare a b = Ordering.of_float (a -. b)*)
+  let multiply a b = a *. b
   let add a b  = a +. b
   let print t = print_float t
 end
