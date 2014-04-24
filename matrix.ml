@@ -22,33 +22,36 @@ sig
 
   (*returns the dimensions of a matrix*)
   val dimensions : t -> (int * int)
+ 
+  (*returns the smallest non-zero element of a matrix*)
+  val minimum : t -> elt
 
 end
 
 module MATRIX =
 struct
 
-	type elt = float
+  type elt = float
 
-	type t = elt array array
+  type t = elt array array
 
-	exception invalid_dimensions
+  exception invalid_dimensions
 
-	let of_list (lst : elt list list) : t = 
-		let rec loop =
-			match lst with
-			| [] -> [||]
-			| x :: xs -> Array.append (Array.of_list x) loop xs
+  let of_list (lst : elt list list) : t = 
+    let rec loop  =
+      match lst with
+      | [] -> [||]
+      | x :: xs -> Array.append (Array.of_list x) loop xs
 
-	let dimensions (m: t) : (int * int) =
+  let dimensions (m: t) : (int * int) =
 		
 
-	let multiply (m1 : t) (m2 : t) : t = 
-		if (dimensions m1) <> (dimensions m2)
-		then raise invalid_dimensions
-		else 
+  let multiply (m1 : t) (m2 : t) : t = 
+    if (dimensions m1) <> (dimensions m2)
+    then raise invalid_dimensions
+    else 
 
-	let get ((x, y) : (int * int)) (m: t) = 
-		Array.get (Array.get m x) y
+  let get ((x, y) : (int * int)) (m: t) = 
+    Array.get (Array.get m x) y
 
 end
