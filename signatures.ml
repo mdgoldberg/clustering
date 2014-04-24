@@ -20,12 +20,18 @@ sig
   (*returns an element of the matrix *)
   val get : (int * int) -> t -> elt
 
+<<<<<<< HEAD
   (*returns the dimensions of an array*) 
   val dimensions : t -> (int * int)
 
   (*returns the smallest non-zero element of a matrix*)
   val minimum : t -> elt
 
+=======
+  (* returns the dimensions of a matrix *)
+  val dimensions : t -> (int * int)
+
+>>>>>>> 2ae2c70bceff06dc8980993a9f6c8bf76caad4ab
 end
 
 (*signature for graph clustering algorithms:
