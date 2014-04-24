@@ -1,4 +1,4 @@
-open Core
+open Core.Std
 
 module type MATRIX = 
 sig
@@ -28,6 +28,9 @@ sig
 
   (*since matrices are abstract, this function prints them out*)
   val print : t  -> unit
+
+  (* similarly to the above, we can use this for testing and printing *)
+  val print_elt : elt -> unit
 
 end
 

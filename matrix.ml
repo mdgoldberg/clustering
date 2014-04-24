@@ -43,9 +43,7 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
 
   type elt = C.t
 
-
   type t = elt array array
-
 
   exception Invalid_Dimensions
 
@@ -56,7 +54,7 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
       | x :: xs ->
 	 ret.(i) <- Array.of_list x;
 	 loop xs ret (i+1)
-	 in loop lst (Array.create (List.length lst) [| C.default |]) 0
+	 in loop lst (Array.create ~len:(List.length lst) [| C.default |]) 0
 
   let dimensions (m: t) : (int * int) =
     (Array.length m, Array.length m.(0))
@@ -67,7 +65,7 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     if c1 <> r2
     then raise Invalid_Dimensions
     else 
-      let res = Array.make_matrix r1 c2 C.default in
+      let res = Array.make_matrix ~dimx:r1 ~dimy:c2 C.default in
       for i = 0 to r1 - 1 do 
 	for j = 0 to c2 - 1 do
 	  for k = 0 to c1 - 1 do
@@ -76,19 +74,27 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
 	done;
       done;
     res 							
-    
-	  
 
   let get ((x, y) : (int * int)) (m: t) = 
     Array.get (Array.get m x) y
 
   let minimum (m : t) : elt =
-    failwith "unimplemented"
+    Array.fold_right m ~init:m.(0).(0) ~f:(fun x r ->
+      min r (Array.fold_right x ~init:x.(0) ~f:(fun x' r' ->
+	min x' r')))
 
   let print (m: t) : unit = 
     let print_row (row : elt array) =
-      Array.iter row C.print in
-    Array.iter m print_row 
+      print_string "[";
+      Array.iter row ~f:(fun x -> C.print x; print_string ", ");
+      print_string "\b\b]\n" (* not elegant but gets the job done *)
+    in 
+    print_string "{\n";
+    Array.iter m ~f:print_row;
+    print_string "}\n"
+
+  (* For testing *)
+  let print_elt = C.print
 	 
 end
 
@@ -107,9 +113,7 @@ assert(M.multiply (M.of_list [[1;2;3;4];[5;6;7;8]])
 		  (M.of_list [[9;10];[11;12];[13;14];[15;16]]) 
        = (M.of_list [[130;140];[322;348]]));;
 
-let t = M.of_list [[9;10];[11;12];[13;14];[15;16]] in
-M.print t
-
-
-print_int 4
+let t = M.of_list [[9;10];[11;12];[-1;14];[15;16]] in
+M.print t;
+assert(M.minimum t = -1)
 
