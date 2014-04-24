@@ -26,35 +26,41 @@ sig
   (*returns the smallest non-zero element of a matrix*)
   val minimum : t -> elt
 
+  (*since matrices are abstract, this function prints them out*)
+  val print : t  -> unit
+
 end
 
 (*signature for graph clustering algorithms:
  * Kruskal's Algorithm and Markov Process Clustering *)
 module type CLUSTER =
-sig
+  functor (Matrix: MATRIX) ->
+  sig 
   (*The first argument is an option for the parameters of that
    *specific algorithm. If the algorithm doesn't take in any, just
    * pass in None. *)
-  val cluster: 'a option -> MATRIX.t -> 'b list list
+  val cluster: 'a option -> Matrix.t -> int list list
 end
 
 module type STATS =
-sig
+  functor (Matrix: MATRIX) ->
+  sig
 
-  val avg_dist_single : 'a list-> float
+  val avg_dist_single : Matrix.t -> int list-> float
 
-  val avg_dist_all : 'a list list -> float list
+  val avg_dist_all : Matrix.t -> int list list -> float list
 
-  val dist_between_two : 'a list -> 'a list -> float
+  val dist_between_two : Matrix.t -> int list -> int list -> float
 
-  val dist_between_all : 'a list list -> float list list
+  val dist_between_all : int list list -> float list list
 					     
 end
 
 module type TO_GRAPH = 
-sig
+  functor (Matrix: MATRIX) ->
+  sig
 
-  val to_graph : 'a -> MATRIX.t
+  val to_graph : 'a -> Matrix.t
 
-end
+  end
 

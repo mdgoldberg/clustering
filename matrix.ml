@@ -1,33 +1,6 @@
-open Core
-open signatures
+open Core.Std
+open Signatures
 
-module type MATRIX = 
-sig
-
-  (*type of the elements*)
-  type elt
-
-  (*implementation of the matrix itself*)
-  type t
-
-  exception Invalid_Dimensions
-
-  (*creates a matrix out of list of lists*)
-  val of_list : elt list list -> t
-  
-  (*multiplies two matrices together*)
-  val multiply : t -> t -> t
-
-  (*returns an element of the matrix *)
-  val get : (int * int) -> t -> elt
-
-  (*returns the dimensions of a matrix*)
-  val dimensions : t -> (int * int)
- 
-  (*returns the smallest non-zero element of a matrix*)
-  val minimum : t -> elt
-
-end
 
 (* A module signature for comparing data types *)
 module type COMPARABLE =
@@ -48,6 +21,9 @@ sig
   (* Addition *)
   val add : t -> t -> t
 
+  (* Prints specific types *)
+  val print : t -> unit
+
 end
 
 (* For testing: *)
@@ -58,11 +34,12 @@ struct
   let compare a b = Ordering.of_int (a - b)
   let multiply a b = a * b
   let add a b = a + b
+  let print t = print_int t 
 end
 
 (* Array implementation *)
 module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
-struct
+  struct
 
   type elt = C.t
 
@@ -85,26 +62,54 @@ struct
     (Array.length m, Array.length m.(0))
 
   let multiply (m1 : t) (m2 : t) : t = 
-   (* let (r1, c1) = dimensions m1 in
+    let (r1, c1) = dimensions m1 in
     let (r2, c2) = dimensions m2 in
     if c1 <> r2
     then raise Invalid_Dimensions
     else 
-      let res = Array.make_matrix r1 c2 C.t
-      for i = 0 to max_columns do 
-	for j = 0 to max_rows do
-	  res.(i).(j) <- res.(i).(j) C.add (C.multiply a.(i).(j) b.(j).(i)) *)
-    failwith "asda"
+      let res = Array.make_matrix r1 c2 C.default in
+      for i = 0 to r1 - 1 do 
+	for j = 0 to c2 - 1 do
+	  for k = 0 to c1 - 1 do
+	    res.(i).(j) <- C.add (C.multiply m1.(i).(k) m2.(k).(j)) res.(i).(j) 
+	  done;
+	done;
+      done;
+    res 							
+    
 	  
 
   let get ((x, y) : (int * int)) (m: t) = 
     Array.get (Array.get m x) y
 
   let minimum (m : t) : elt =
-    failwith "not implemented"
+    failwith "unimplemented"
 
+  let print (m: t) : unit = 
+    let print_row (row : elt array) =
+      Array.iter row C.print in
+    Array.iter m print_row 
+	 
 end
 
-module IntMatrix = ArrayMatrix(IntCompare)
+module M = ArrayMatrix(IntCompare)
 
-let t = IntMatrix.of_list [[1;2];[3;4]]
+
+assert(M.multiply (M.of_list [[1;2];[3;4]]) (M.of_list [[1;0];[0;1]]) 
+       = (M.of_list [[1;2];[3;4]]));;
+assert(M.multiply (M.of_list [[1;2];[3;4]]) (M.of_list [[0;0];[0;0]]) 
+       = (M.of_list [[0;0];[0;0]]));;
+assert(M.multiply (M.of_list [[1;2];[3;4]]) (M.of_list [[5;6];[7;8]]) 
+       = (M.of_list [[19;22];[43;50]]));;
+assert(M.multiply (M.of_list [[1;2]]) (M.of_list [[5];[8]]) 
+       = (M.of_list [[21]]));;
+assert(M.multiply (M.of_list [[1;2;3;4];[5;6;7;8]]) 
+		  (M.of_list [[9;10];[11;12];[13;14];[15;16]]) 
+       = (M.of_list [[130;140];[322;348]]));;
+
+let t = M.of_list [[9;10];[11;12];[13;14];[15;16]] in
+M.print t
+
+
+print_int 4
+
