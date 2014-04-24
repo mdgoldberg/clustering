@@ -32,6 +32,10 @@ sig
   (* similarly to the above, we can use this for testing and printing *)
   val print_elt : elt -> unit
 
+  (*returns all the elements of the column, 
+   except the one on the main diagonal*)
+  val get_column : t -> int -> elt list
+
 end
 
 (*signature for graph clustering algorithms:

@@ -93,6 +93,18 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     Array.iter m ~f:print_row;
     print_string "}\n"
 
+  let get_column (m: t) (col: int) : elt list =
+    let (rows, _) = dimensions m in
+    let rec extract lst i =
+      if i < 0
+      then lst
+      else if i = col
+      then extract lst (i - 1)
+      else let el = get (i, col) m in 
+	extract  (el :: lst) (i - 1)
+    in
+    extract [] (rows - 1)
+
   (* For testing *)
   let print_elt = C.print
 	 
@@ -115,5 +127,9 @@ assert(M.multiply (M.of_list [[1;2;3;4];[5;6;7;8]])
 
 let t = M.of_list [[9;10];[11;12];[-1;14];[15;16]] in
 M.print t;
-assert(M.minimum t = -1)
+assert(M.minimum t = -1);;
+assert(M.get_column (M.of_list [[9;10];[11;12];[13;14];[15;16]]) 0 =
+      [11;13;15]);;
+assert(M.get_column (M.of_list [[1;2;3;4];[5;6;7;8]]) 3  = [4;8]);;
+
 
