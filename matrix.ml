@@ -37,6 +37,16 @@ struct
   let print t = print_int t 
 end
 
+module FloatCompare: COMPARABLE with type t = float =
+struct
+  type t = float
+  let default = 0.0
+  let compare a b = Ordering.of_float (a -. b)
+  let multiply a b = a * b
+  let add a b  = a +. b
+  let print t = print_float t
+end
+
 (* Array implementation *)
 module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
   struct

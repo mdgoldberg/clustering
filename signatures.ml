@@ -59,7 +59,7 @@ module type STATS =
 
   val dist_between_two : Matrix.t -> int list -> int list -> float
 
-  val dist_between_all : int list list -> float list list
+  val dist_between_all : Matrix.t -> int list list -> float list 
 					     
 end
 
