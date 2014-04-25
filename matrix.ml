@@ -24,17 +24,22 @@ sig
   (* Prints specific types *)
   val print : t -> unit
 
+  (*converts element to a float*)
+  val to_float : t -> float
+
 end
 
 (* For testing: *)
 module IntCompare : COMPARABLE  with type t = int =
 struct 
+
   type t = int
   let default = 0
   let compare a b = Ordering.of_int (a - b)
   let multiply a b = a * b
   let add a b = a + b
-  let print t = print_int t 
+  let print t = print_int t
+  let to_float t = Float.of_int t
 end
 
 module FloatCompare: COMPARABLE with type t = float =
@@ -45,6 +50,7 @@ struct
   let multiply a b = a *. b
   let add a b  = a +. b
   let print t = print_float t
+  let to_float t = t
 end
 
 (* Array implementation *)
@@ -117,6 +123,9 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
 
   (* For testing *)
   let print_elt = C.print
+
+  let float_of_elt (el : elt) : float = 
+    C.to_float el
 	 
 end
 

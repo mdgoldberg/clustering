@@ -36,6 +36,9 @@ sig
    except the one on the main diagonal*)
   val get_column : t -> int -> elt list
 
+  (*turns elements into floats for purposes of stats module*)
+  val float_of_elt : elt -> float
+
 end
 
 (*signature for graph clustering algorithms:
