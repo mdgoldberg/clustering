@@ -1,5 +1,32 @@
 open Core.Std
 
+(* A module signature for comparing data types *)
+module type COMPARABLE =
+sig 
+  
+  (* Type *)
+  type t
+  
+  (* Default of type, for array creation *)
+  val default : t
+
+  (* Comparison function *)
+  val compare : t -> t -> Ordering.t
+
+  (* Multiplication function*)
+  val multiply : t -> t -> t
+
+  (* Addition *)
+  val add : t -> t -> t
+
+  (* Prints specific types *)
+  val print : t -> unit
+
+  (*converts element to a float*)
+  val to_float : t -> float
+
+end
+
 module type MATRIX = 
 sig
 
@@ -13,12 +40,18 @@ sig
 
   (*creates a matrix out of list of lists*)
   val of_list : elt list list -> t
-  
+
+  (* creates a matrix with given dimensions. Initial values are undefined behavior *)
+  val of_dimensions : (int * int) -> t
+
   (*multiplies two matrices together*)
   val multiply : t -> t -> t
 
   (*returns an element of the matrix *)
   val get : (int * int) -> t -> elt
+
+  (* edits an element of the matrix and returns unit *)
+  val set : (int * int) -> t -> elt -> unit
 
   (*returns the dimensions of an array*) 
   val dimensions : t -> (int * int)
@@ -32,9 +65,8 @@ sig
   (* similarly to the above, we can use this for testing and printing *)
   val print_elt : elt -> unit
 
-  (*returns all the elements of the column, 
-   except the one on the main diagonal*)
-  val get_column : t -> int -> elt list
+  (*returns all the elements of a given column *)
+  val get_column : t -> int -> elt array
 
   (*turns elements into floats for purposes of stats module*)
   val float_of_elt : elt -> float

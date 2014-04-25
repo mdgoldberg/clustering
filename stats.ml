@@ -2,7 +2,6 @@ open Core.Std
 open Signatures
 open Matrix
 
-(*right now Stats only works with float matrices*)
 module Stats: STATS = 
   functor(Matrix: MATRIX) ->
   struct
