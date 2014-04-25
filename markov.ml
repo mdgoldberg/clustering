@@ -17,7 +17,8 @@ struct
     let multiply a b = a *. b
     let add a b  = a +. b
     let print t = print_float t
-    let to_float t = t
+    let float_of_t t = t
+    let t_of_float f = f
   end
 
   module FloatMatrix : MATRIX = Matrix.ArrayMatrix(FloatCompare)
@@ -32,11 +33,17 @@ struct
 	  let new_elts = Array.map elts
 	    ~f:(fun e -> (float_of_elt e) /. Float.of_int (Array.length elts))
 	  in 
-	  Array.iteri new_elts ~f:(fun r e -> FloatMatrix.set (r,col) newmat e); (* PROBLEM: e IS OF TYPE float, NOT TYPE FloatMatrix.t *)
+	  Array.iteri new_elts ~f:(fun r e -> FloatMatrix.set
+	    (r,col) newmat (FloatMatrix.elt_of_float e));
 	  loop (col+1)
 	)
     in 
-    loop m 0
+    loop 0
+
+  let expand m e = m
+  let inflate m r = m
+  let has_converged m = true
+  let interpret m = [[0];[1]]
 
 (* Functions to write:
  * normalize;
@@ -45,8 +52,12 @@ struct
  * has_converged (?); - look for repeats? could require a ton of space
  * interpret *)
 
-  let cluster (args : 'a option) (m : Matrix.t) : int list list =
+  let cluster (args : cluster_args_t) (m : MatrixMod.t) : int list list =
     let norm_matrix = normalize m in
+    let (e,r) = match args with
+      | Kruskal _ -> failwith "Wrong argument type"
+      | Markov (e,r) -> (e,r)
+    in 
     let rec iterate mat (* keep list of past matrices here? *) =
       if has_converged mat then
 	interpret mat

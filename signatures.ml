@@ -23,7 +23,10 @@ sig
   val print : t -> unit
 
   (*converts element to a float*)
-  val to_float : t -> float
+  val float_of_t : t -> float
+
+  (* inverse of above; converts flaot to t *)
+  val t_of_float : float -> t
 
 end
 
@@ -71,7 +74,13 @@ sig
   (*turns elements into floats for purposes of stats module*)
   val float_of_elt : elt -> float
 
+  (* inverse of the above transformation *)
+  val elt_of_float : float -> elt
+
 end
+
+type cluster_args_t = | Kruskal of int
+		      | Markov of int * int
 
 (*signature for graph clustering algorithms:
  * Kruskal's Algorithm and Markov Process Clustering *)
@@ -81,7 +90,7 @@ module type CLUSTER =
   (*The first argument is an option for the parameters of that
    *specific algorithm. If the algorithm doesn't take in any, just
    * pass in None. *)
-  val cluster: 'a option -> Matrix.t -> int list list
+  val cluster: cluster_args_t -> Matrix.t -> int list list
 end
 
 module type STATS =

@@ -12,7 +12,8 @@ struct
   let multiply a b = a * b
   let add a b = a + b
   let print t = print_int t
-  let to_float t = Float.of_int t
+  let float_of_t t = Float.of_int t
+  let t_of_float f = Int.of_float f
 end
 
 module FloatCompare: COMPARABLE with type t = float =
@@ -26,7 +27,8 @@ struct
   let multiply a b = a *. b
   let add a b  = a +. b
   let print t = print_float t
-  let to_float t = t
+  let float_of_t t = t
+  let t_of_float f = f
 end
 
 (* Array implementation *)
@@ -102,8 +104,9 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
   (* For testing *)
   let print_elt = C.print
 
-  let float_of_elt (el : elt) : float = 
-    C.to_float el
+  let float_of_elt (el : elt) : float = C.float_of_t el
+
+  let elt_of_float (f : float) : elt = C.t_of_float f
 	 
 end
 
