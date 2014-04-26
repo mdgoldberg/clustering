@@ -80,7 +80,7 @@ sig
 end
 
 type cluster_args_t = | Kruskal of int
-		      | Markov of int * int
+		      | Markov of int * float
 
 (*signature for graph clustering algorithms:
  * Kruskal's Algorithm and Markov Process Clustering *)
