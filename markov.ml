@@ -122,9 +122,12 @@ struct
   let float_of_t t = t
   let t_of_float f = f
 end
+(*
+Buggy test code - type checking not successful
 
 module FloatMatrix : MATRIX = Matrix.ArrayMatrix(FloatCompare)
 
 module FloatMarkov : CLUSTER = Markov(FloatMatrix)
 
 FloatMarkov.cluster (Markov (2,2.)) (FloatMatrix.of_list [[1;1;1;1];[1;1;0;1];[1;0;1;0];[1;1;0;1]])
+*)
