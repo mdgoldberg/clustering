@@ -71,6 +71,9 @@ sig
   (*returns all the elements of a given column *)
   val get_column : t -> int -> elt array
 
+  (* returns all elements in a given row *)
+  val get_row : t -> int -> elt array
+
   (*turns elements into floats for purposes of stats module*)
   val float_of_elt : elt -> float
 

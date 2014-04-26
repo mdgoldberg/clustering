@@ -99,7 +99,9 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     print_string "}\n"
 
   let get_column (m: t) (col: int) : elt array =
-    (Array.map m ~f:(fun r -> r.(col)))
+    Array.map m ~f:(fun r -> r.(col))
+      
+  let get_row (m : t) (row : int) : elt array = m.(row)
 
   (* For testing *)
   let print_elt = C.print
@@ -126,7 +128,6 @@ assert(M.multiply (M.of_list [[1;2;3;4];[5;6;7;8]])
        = (M.of_list [[130;140];[322;348]]));;
 
 let t = M.of_list [[9;10];[11;12];[-1;14];[15;16]] in
-M.print t;
 assert(M.minimum t = -1);;
 assert(M.get_column (M.of_list [[9;10];[11;12];[13;14];[15;16]]) 0 =
       [|9;11;13;15|]);;
