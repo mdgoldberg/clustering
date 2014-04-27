@@ -2,7 +2,8 @@ open Core.Std
 open Signatures
 open Matrix
 
-module Markov (MatrixMod : MATRIX) : CLUSTER =
+module Markov : CLUSTER =
+  functor (MatrixMod : MATRIX) ->
 struct
 
   module FloatCompare : COMPARABLE with type t = float =
@@ -20,16 +21,11 @@ struct
     let t_of_float f = f
   end
 
-  module FloatMatrix : MATRIX with type elt = FloatCompare.t = ArrayMatrix(FloatCompare)
-
-  let sumelts (arr : MatrixMod.elt array) : float =
-    Array.fold_right arr
-      ~f:(fun x r -> (MatrixMod.float_of_elt x) +. r) ~init:0.
-
-  let sumfloats (arr : float array) : float =
-    Array.fold_right arr ~f:(+.) ~init:0.
+  module FloatMatrix = ArrayMatrix(FloatCompare)
 
   let normalize (m : MatrixMod.t) : FloatMatrix.t =
+    let sumelts = Array.fold_right ~init:0.
+      ~f:(fun x r -> (MatrixMod.float_of_elt x) +. r) in
     let (dimx, dimy) = MatrixMod.dimensions m in
     let newmat = FloatMatrix.of_dimensions (dimx,dimy) in
     let rec loop col =
@@ -54,6 +50,7 @@ struct
     in loop m e
 
   let inflate m r =
+    let sumfloats = Array.fold_right ~f:(+.) ~init:0. in
     let (_,numcols) = FloatMatrix.dimensions m in
     let rec loop newmat origmat col =
       if col = numcols then newmat else
