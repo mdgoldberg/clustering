@@ -80,6 +80,9 @@ sig
   (* inverse of the above transformation *)
   val elt_of_float : float -> elt
 
+  (* Compares two elts *)
+  val compare_elts : elt -> elt -> int
+
 end
 
 type cluster_args_t = | Kruskal of int

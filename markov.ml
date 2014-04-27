@@ -2,8 +2,7 @@ open Core.Std
 open Signatures
 open Matrix
 
-module Markov : CLUSTER =
-  functor (MatrixMod : MATRIX) -> 
+module Markov (MatrixMod : MATRIX) : CLUSTER =
 struct
 
   module FloatCompare : COMPARABLE with type t = float =
@@ -21,7 +20,7 @@ struct
     let t_of_float f = f
   end
 
-  module FloatMatrix : MATRIX = Matrix.ArrayMatrix(FloatCompare)
+  module FloatMatrix : MATRIX with type elt = FloatCompare.t = ArrayMatrix(FloatCompare)
 
   let sumelts (arr : MatrixMod.elt array) : float =
     Array.fold_right arr
@@ -50,7 +49,7 @@ struct
 
   let expand m e =
     let rec loop newmat count =
-      if count = 1 then m else
+      if count = 1 then newmat else
 	loop (FloatMatrix.multiply newmat m) (count-1)
     in loop m e
 
@@ -68,10 +67,6 @@ struct
 	loop newmat origmat (col+1)
     in loop m m 0
 
-  let last_matrix = ref (FloatMatrix.of_list [[]])
-
-  let has_converged m = m = (!last_matrix)
-
   let interpret m =
     let (numrows,_) = FloatMatrix.dimensions m in
     let rec loop row results =
@@ -82,29 +77,36 @@ struct
 	    if float_of_elt e > 0. then i :: res else res) in
 	  loop (row+1) (clust :: results)
 	)
-    in List.filter (loop 0 []) ~f:(fun cl -> not (cl = []))
+    in List.filter_map (loop 0 []) ~f:(fun cl ->
+      if (cl = []) then None else Some (List.sort ~cmp:(-) cl))
+
+  let last_matrix = ref (FloatMatrix.of_list [[]])
+
+  let has_converged m = m = (!last_matrix)
 
 (* Functions to write:
- * normalize;
- * expand;
- * inflate;
  * has_converged
- * interpret *)
+ *)
 
   let cluster (args : cluster_args_t) (m : MatrixMod.t) : int list list =
-    let norm_matrix = normalize m in
     let (e,r) = match args with
       | Kruskal _ -> failwith "Wrong argument type"
       | Markov (e,r) -> (e,r)
     in 
-    let rec iterate mat (* keep list of past matrices here? *) =
+    let rec iterate mat =
       if has_converged mat then
-	interpret mat
+	begin 
+	  FloatMatrix.print mat;
+	  interpret mat
+	end 
       else 
 	let newm = inflate (expand mat e) r in
-	last_matrix := newm;
+	FloatMatrix.print newm;
+	last_matrix := mat;
 	iterate newm
-    in iterate norm_matrix
+    in iterate (normalize m)
+
+let _ = ();;
 
 end
 
@@ -123,6 +125,8 @@ struct
   let t_of_float f = f
 end
 (*
+line 1105
+
 Buggy test code - type checking not successful
 
 module FloatMatrix : MATRIX = Matrix.ArrayMatrix(FloatCompare)

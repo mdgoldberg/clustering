@@ -109,6 +109,11 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
   let float_of_elt (el : elt) : float = C.float_of_t el
 
   let elt_of_float (f : float) : elt = C.t_of_float f
+
+  let compare_elts a b : int = match C.compare a b with
+    | Greater -> 1
+    | Equal -> 0
+    | Less -> (-1)
 	 
 end
 
