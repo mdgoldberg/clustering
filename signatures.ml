@@ -71,33 +71,39 @@ sig
   (*returns all the elements of a given column *)
   val get_column : t -> int -> elt array
 
+  (* returns all elements in a given row *)
+  val get_row : t -> int -> elt array
+
   (*turns elements into floats for purposes of stats module*)
   val float_of_elt : elt -> float
 
   (* inverse of the above transformation *)
   val elt_of_float : float -> elt
 
+  (* Compares two elts *)
+  val compare_elts : elt -> elt -> int
+
 end
 
 type cluster_args_t = | Kruskal of int
-		      | Markov of int * int
+		      | Markov of int * float
 
 (*signature for graph clustering algorithms:
  * Kruskal's Algorithm and Markov Process Clustering *)
 module type CLUSTER =
-  functor (Matrix: MATRIX) ->
+  functor (MatrixMod : MATRIX) ->
   sig 
-  (*The first argument is an option for the parameters of that
-   *specific algorithm. If the algorithm doesn't take in any, just
-   * pass in None. *)
-  val cluster: cluster_args_t -> Matrix.t -> int list list
+
+    (* The first argument is for the parameters of that
+     * specific algorithm. *)
+    val cluster: cluster_args_t -> MatrixMod.t -> int list list
 end
 
 module type STATS =
-  functor (Matrix: MATRIX) ->
+  functor (Matrix : MATRIX) ->
   sig
 
-  val avg_dist_single : Matrix.t -> int list-> float
+  val avg_dist_single : Matrix.t -> int list -> float
 
   val avg_dist_all : Matrix.t -> int list list -> float list
 
