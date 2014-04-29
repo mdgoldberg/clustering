@@ -2,35 +2,6 @@ open Core.Std
 open Signatures
 
 
-(* For testing: *)
-module IntCompare : COMPARABLE  with type t = int =
-struct 
-
-  type t = int
-  let default = 0
-  let compare a b = Ordering.of_int (a - b)
-  let multiply a b = a * b
-  let add a b = a + b
-  let print t = print_int t
-  let float_of_t t = Float.of_int t
-  let t_of_float f = Int.of_float f
-end
-
-module FloatCompare: COMPARABLE with type t = float =
-struct
-  type t = float
-  let default = 0.0
-  let compare a b = 
-    let diff = (a -. b) in
-    if diff > 0. then Greater else
-      if diff = 0. then Equal else Less
-  let multiply a b = a *. b
-  let add a b  = a +. b
-  let print t = print_float t
-  let float_of_t t = t
-  let t_of_float f = f
-end
-
 (* Array implementation *)
 module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
   struct
@@ -48,10 +19,10 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
       | x :: xs ->
 	 ret.(i) <- Array.of_list x;
 	 loop xs ret (i+1)
-	 in loop lst (Array.create ~len:(List.length lst) [| C.default |]) 0
+	 in loop lst (Array.create ~len:(List.length lst) [| C.zero |]) 0
 
   let of_dimensions (dimx,dimy) : t =
-    Array.make_matrix ~dimx ~dimy C.default
+    Array.make_matrix ~dimx ~dimy C.zero
 
   let dimensions (m: t) : (int * int) =
     (Array.length m, Array.length m.(0))
@@ -62,7 +33,7 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     if c1 <> r2
     then raise Invalid_Dimensions
     else 
-      let res = Array.make_matrix ~dimx:r1 ~dimy:c2 C.default in
+      let res = Array.make_matrix ~dimx:r1 ~dimy:c2 C.zero in
       for i = 0 to r1 - 1 do 
 	for j = 0 to c2 - 1 do
 	  for k = 0 to c1 - 1 do
@@ -115,6 +86,35 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     | Equal -> 0
     | Less -> (-1)
 	 
+end
+
+(* For testing: *)
+module IntCompare : COMPARABLE  with type t = int =
+struct 
+
+  type t = int
+  let zero = 0
+  let compare a b = Ordering.of_int (a - b)
+  let multiply a b = a * b
+  let add a b = a + b
+  let print t = print_int t
+  let float_of_t t = Float.of_int t
+  let t_of_float f = Int.of_float f
+end
+
+module FloatCompare: COMPARABLE with type t = float =
+struct
+  type t = float
+  let zero = 0.0
+  let compare a b = 
+    let diff = (a -. b) in
+    if diff > 0. then Greater else
+      if diff = 0. then Equal else Less
+  let multiply a b = a *. b
+  let add a b  = a +. b
+  let print t = print_float t
+  let float_of_t t = t
+  let t_of_float f = f
 end
 
 module M = ArrayMatrix(IntCompare)

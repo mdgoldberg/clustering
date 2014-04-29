@@ -7,8 +7,8 @@ sig
   (* Type *)
   type t
   
-  (* Default of type, for array creation *)
-  val default : t
+  (* zero of type, used for array creation (Invariant) *)
+  val zero : t
 
   (* Comparison function *)
   val compare : t -> t -> Ordering.t
@@ -120,4 +120,3 @@ module type TO_GRAPH =
   val to_graph : 'a -> Matrix.t
 
   end
-
