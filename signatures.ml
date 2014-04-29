@@ -117,7 +117,7 @@ module type TO_GRAPH =
   functor (Matrix: MATRIX) ->
   sig
 
-  val to_graph : 'a -> Matrix.t
+  val to_graph : float list list -> Matrix.t
 
   end
 

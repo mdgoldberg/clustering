@@ -93,12 +93,10 @@ struct
     let rec iterate mat =
       if has_converged mat then
 	begin 
-	  FloatMatrix.print mat;
 	  interpret mat
 	end 
       else 
 	let newm = inflate (expand mat e) r in
-	FloatMatrix.print newm;
 	last_matrix := mat;
 	iterate newm
     in iterate (normalize m)
@@ -121,14 +119,22 @@ struct
   let float_of_t t = t
   let t_of_float f = f
 end
-(*
-line 1105
 
-Buggy test code - type checking not successful
 
-module FloatMatrix : MATRIX = Matrix.ArrayMatrix(FloatCompare)
+ (*  Buggy test code - type checking not successful *)
 
-module FloatMarkov : CLUSTER = Markov(FloatMatrix)
+module FloatMatrix = Matrix.ArrayMatrix(FloatCompare)
 
-FloatMarkov.cluster (Markov (2,2.)) (FloatMatrix.of_list [[1;1;1;1];[1;1;0;1];[1;0;1;0];[1;1;0;1]])
-*)
+module FloatMarkov = Markov(FloatMatrix)
+
+let test = FloatMarkov.cluster (Markov (2,10.)) (FloatMatrix.of_list [[1.;1.;1.;1.];[1.;1.;0.;1.];[1.;0.;1.;0.];[1.;1.;0.;1.]])
+
+let rec print_list (lst : int list) : unit =
+  match lst with
+  | hd :: tl -> print_int hd; print_string " "; print_list tl
+  | [] -> print_string "\n"
+
+let print_lists lsts = List.iter lsts ~f:(print_list);;
+
+print_lists test
+
