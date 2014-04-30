@@ -97,17 +97,9 @@ struct
 	  interpret mat
 	end 
       else 
-<<<<<<< HEAD
-	begin 
-	  let newm = inflate (expand mat e) r in
-	  last_matrix := mat;
-	  iterate newm
-	end 
-=======
 	let newm = inflate (expand mat e) r in
 	last_matrix := mat;
 	iterate newm
->>>>>>> e015eb0db2adad4eeb10c60c553435698225795b
     in iterate (normalize m)
 
 end
