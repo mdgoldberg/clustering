@@ -9,7 +9,7 @@ struct
   module FloatCompare : COMPARABLE with type t = float =
   struct
     type t = float
-    let default = 0.0
+    let zero = 0.0
     let compare a b = 
       let diff = (a -. b) in
       if diff > 0. then Greater else
@@ -91,50 +91,51 @@ struct
       | Markov (e,r) -> (e,r)
     in 
     let rec iterate mat =
+      FloatMatrix.print mat;
       if has_converged mat then
 	begin 
 	  interpret mat
 	end 
       else 
+<<<<<<< HEAD
+	begin 
+	  let newm = inflate (expand mat e) r in
+	  last_matrix := mat;
+	  iterate newm
+	end 
+=======
 	let newm = inflate (expand mat e) r in
 	last_matrix := mat;
 	iterate newm
+>>>>>>> e015eb0db2adad4eeb10c60c553435698225795b
     in iterate (normalize m)
 
-let _ = ();;
-
 end
 
-module FloatCompare : COMPARABLE with type t = float =
+module IntCompare : COMPARABLE with type t = int =
 struct
-  type t = float
-  let default = 0.0
-  let compare a b = 
-    let diff = (a -. b) in
-    if diff > 0. then Greater else
-      if diff = 0. then Equal else Less
-  let multiply a b = a *. b
-  let add a b  = a +. b
-  let print t = print_float t
-  let float_of_t t = t
-  let t_of_float f = f
+  type t = int
+  let zero = 0
+  let compare a b = Ordering.of_int (a-b)
+  let multiply a b = a * b
+  let add a b  = a + b
+  let print t = print_int t
+  let float_of_t t = Float.of_int t
+  let t_of_float f = Int.of_float f
 end
 
+module IntMatrix = ArrayMatrix(IntCompare)
 
- (*  Buggy test code - type checking not successful *)
+module IntMarkov = Markov(IntMatrix)
 
-module FloatMatrix = Matrix.ArrayMatrix(FloatCompare)
+let test = IntMarkov.cluster (Markov (2,2.)) (IntMatrix.of_list [[0;1;0];
+								 [1;0;100];
+								 [0;100;0]])
 
-module FloatMarkov = Markov(FloatMatrix)
+let print_lists lsts =
+  let print_list =
+    List.iter ~f:(fun e -> print_int e; print_string " ")
+  in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
-let test = FloatMarkov.cluster (Markov (2,10.)) (FloatMatrix.of_list [[1.;1.;1.;1.];[1.;1.;0.;1.];[1.;0.;1.;0.];[1.;1.;0.;1.]])
-
-let rec print_list (lst : int list) : unit =
-  match lst with
-  | hd :: tl -> print_int hd; print_string " "; print_list tl
-  | [] -> print_string "\n"
-
-let print_lists lsts = List.iter lsts ~f:(print_list);;
-
-print_lists test
+let _ = print_lists test
 
