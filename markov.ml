@@ -23,21 +23,31 @@ struct
 
   module FloatMatrix = ArrayMatrix(FloatCompare)
 
-  let normalize (m : MatrixMod.t) : FloatMatrix.t =
-    let sumelts = Array.fold_right ~init:0.
-      ~f:(fun x r -> (MatrixMod.float_of_elt x) +. r) in
+  let toFloatMat (m : MatrixMod.t) : FloatMatrix.t =
     let (dimx, dimy) = MatrixMod.dimensions m in
     let newmat = FloatMatrix.of_dimensions (dimx,dimy) in
     let rec loop col =
       if col = dimy then newmat else
 	MatrixMod.(
 	  let elts = get_column m col in
-	  let sum = sumelts elts in
-	  let new_elts = Array.map elts
-	    ~f:(fun e -> (float_of_elt e) /. sum)
-	  in 
-	  Array.iteri new_elts ~f:(fun r e -> FloatMatrix.set
-	    (r,col) newmat (FloatMatrix.elt_of_float e));
+	  let new_elts = Array.map elts ~f:(fun e -> float_of_elt e) in
+	  Array.iteri new_elts ~f:(fun r e ->
+	    FloatMatrix.set (r,col) newmat (FloatMatrix.elt_of_float e));
+	  loop (col+1)
+	)
+    in 
+    loop 0
+
+  let normalize (m: FloatMatrix.t) : FloatMatrix.t =
+    let (_, dimy) = FloatMatrix.dimensions m in
+    let sumfloats = Array.fold_right ~f:(+.) ~init:0. in
+    let rec loop col =
+      if col = dimy then m else
+	FloatMatrix.(
+	  let elts = get_column m col in
+	  let sum = sumfloats elts in
+	  let new_elts = Array.map elts ~f:(fun e -> e /. sum) in
+	  Array.iteri new_elts ~f:(fun r e -> set (r,col) m e);
 	  loop (col+1)
 	)
     in 
@@ -50,19 +60,8 @@ struct
     in loop m e
 
   let inflate m r =
-    let sumfloats = Array.fold_right ~f:(+.) ~init:0. in
-    let (_,numcols) = FloatMatrix.dimensions m in
-    let rec loop newmat origmat col =
-      if col = numcols then newmat else
-	let elts = FloatMatrix.get_column newmat col in
-	let eltssq = Array.map elts
-	  ~f:(fun e -> (FloatMatrix.float_of_elt e) ** r) in
-	let sum = sumfloats eltssq in
-	let newelts = Array.map eltssq ~f:(fun e -> e /. sum) in
-	Array.iteri newelts ~f:(fun r e -> FloatMatrix.set (r,col) newmat
-	  (FloatMatrix.elt_of_float e));
-	loop newmat origmat (col+1)
-    in loop m m 0
+    let newmat = FloatMatrix.map m ~f:(fun e -> e ** r) in
+    normalize newmat
 
   let interpret m =
     let (numrows,_) = FloatMatrix.dimensions m in
@@ -77,13 +76,10 @@ struct
     in List.filter_map (loop 0 []) ~f:(fun cl ->
       if (cl = []) then None else Some (List.sort ~cmp:(-) cl))
 
+
+  (* has_converged doesn't work in cyclic case - maybe change last_matrix to a FloatMatrix.t ref list *)
   let last_matrix = ref (FloatMatrix.of_list [[]])
-
   let has_converged m = m = (!last_matrix)
-
-(* Functions to write:
- * has_converged
- *)
 
   let cluster (args : cluster_args_t) (m : MatrixMod.t) : int list list =
     let (e,r) = match args with
@@ -93,22 +89,14 @@ struct
     let rec iterate mat =
       FloatMatrix.print mat;
       if has_converged mat then
-	begin 
 	  interpret mat
-	end 
       else 
-<<<<<<< HEAD
-	begin 
+	begin
 	  let newm = inflate (expand mat e) r in
 	  last_matrix := mat;
 	  iterate newm
 	end 
-=======
-	let newm = inflate (expand mat e) r in
-	last_matrix := mat;
-	iterate newm
->>>>>>> e015eb0db2adad4eeb10c60c553435698225795b
-    in iterate (normalize m)
+    in iterate (normalize (toFloatMat m))
 
 end
 
@@ -128,9 +116,10 @@ module IntMatrix = ArrayMatrix(IntCompare)
 
 module IntMarkov = Markov(IntMatrix)
 
-let test = IntMarkov.cluster (Markov (2,2.)) (IntMatrix.of_list [[0;1;0];
-								 [1;0;100];
-								 [0;100;0]])
+let test = IntMarkov.cluster (Markov (2,2.)) (IntMatrix.of_list [[0;1;0;0];
+								 [1;0;100;0];
+								 [0;100;0;1];
+								 [0;0;1;0]])
 
 let print_lists lsts =
   let print_list =
