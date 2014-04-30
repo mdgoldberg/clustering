@@ -103,20 +103,30 @@ module type STATS =
   functor (Matrix : MATRIX) ->
   sig
 
-  val avg_dist_single : Matrix.t -> int list -> float
+  (* calculates the average distance between nodes in a cluster
+   * would ideally be small for good clustering algorithms 
+   * returns none if there are no connections between the nodes *)
+  val avg_dist_single : Matrix.t -> int list -> float option
 
-  val avg_dist_all : Matrix.t -> int list list -> float list
+  (* does the same thing as the above but for multiple clusters *)
+  val avg_dist_all : Matrix.t -> int list list -> float option list
 
-  val dist_between_two : Matrix.t -> int list -> int list -> float
+  (* calculates distances between clusters
+   * would ideally be large for good clustering algorithms 
+   * returns None if the two clusters are not connected *)
+  val dist_between_two : Matrix.t -> int list -> int list -> float option
 
-  val dist_between_all : Matrix.t -> int list list -> float list 
+  (* calculates the distance between all pairs of clusters *)
+  val dist_between_all : Matrix.t -> int list list -> float option list 
 					     
 end
 
 module type TO_GRAPH = 
   functor (Matrix: MATRIX) ->
-  sig
+sig
 
-  val to_graph : 'a -> Matrix.t
+  (* takes in a list of points and outputs the transition matrix *)
+  val to_graph : float list list -> Matrix.t
 
-  end
+end
+

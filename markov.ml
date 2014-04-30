@@ -97,11 +97,17 @@ struct
 	  interpret mat
 	end 
       else 
+<<<<<<< HEAD
 	begin 
 	  let newm = inflate (expand mat e) r in
 	  last_matrix := mat;
 	  iterate newm
 	end 
+=======
+	let newm = inflate (expand mat e) r in
+	last_matrix := mat;
+	iterate newm
+>>>>>>> e015eb0db2adad4eeb10c60c553435698225795b
     in iterate (normalize m)
 
 end
@@ -132,3 +138,4 @@ let print_lists lsts =
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
 let _ = print_lists test
+
