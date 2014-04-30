@@ -63,7 +63,7 @@ struct
 				(*Check if the edge will connect two trees*)
 				(*Connect two trees*)
 			done;
-			[Bag.to_list forest]
+			Bag.to_list forest
 		in
 		(*remove_edges tree n*)
 		spanning forest edges

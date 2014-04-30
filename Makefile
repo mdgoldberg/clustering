@@ -1,4 +1,4 @@
-FILES=matrix.ml signatures.ml stats.ml markov.ml Kruskal.ml
+FILES=matrix.ml signatures.ml stats.ml markov.ml cartesian_graph.ml Kruskal.ml
 
 all: $(FILES)
 	corebuild matrix.native
@@ -6,3 +6,5 @@ all: $(FILES)
 	corebuild stats.native
 	corebuild markov.native
 	corebuild Kruskal.native
+	corebuild cartesian_graph.native
+
