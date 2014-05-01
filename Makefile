@@ -5,6 +5,7 @@ all: $(FILES)
 	corebuild signatures.native
 	corebuild stats.native
 	corebuild markov.native
-	corebuild Kruskal.native
-	corebuild cartesian_graph.native
 	corebuild main.native
+	corebuild cartesian_graph.native
+	corebuild Kruskal.native
+
