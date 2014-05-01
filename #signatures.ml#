@@ -52,9 +52,6 @@ sig
   (*multiplies two matrices together*)
   val multiply : t -> t -> t
 
-  (* map function over matrix *)
-  val map : t -> f:(elt -> elt) -> t
-
   (*returns an element of the matrix *)
   val get : (int * int) -> t -> elt
 
