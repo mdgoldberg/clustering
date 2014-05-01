@@ -51,6 +51,8 @@ module Cartesian : TO_GRAPH =
     res
 				 
 end
+(*
+TEST CODE - UNCOMMENT RUN IF NECESSARY 
 
 module FloatMatrix = ArrayMatrix(FloatCompare)
 
@@ -60,3 +62,4 @@ let test_points = [[0.;0.]; [0.; 3.]; [4.; 0.]];;
 let graph = Cart.to_graph test_points ;;
 
 FloatMatrix.print graph 
+*)

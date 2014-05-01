@@ -105,7 +105,7 @@ struct
   let t_of_float f = Int.of_float f
 end
 
-module FloatCompare: COMPARABLE with type t = float =
+module FloatCompare : COMPARABLE with type t = float =
 struct
   type t = float
   let zero = 0.0

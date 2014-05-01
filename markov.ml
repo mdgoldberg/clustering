@@ -116,6 +116,9 @@ struct
 
 end
 
+(*
+TEST CODE - UNCOMMENT TO RUN IF NECESSARY 
+
 module IntCompare : COMPARABLE with type t = int =
 struct
   type t = int
@@ -134,9 +137,9 @@ module IntMarkov = Markov(IntMatrix)
 
 module IntToGraph = Cartesian(IntMatrix)
 
-let test = IntMarkov.cluster (Markov (2,Float.of_string (Sys.argv.(1))))
+let test = IntMarkov.cluster (Markov (2,3.))
   (IntToGraph.to_graph [[1.;2.]; [2.;1.]; [1.;1.];
-			[6.;7.]; [7.;6.]; [6.;6.]])
+			[6.;7.]; [7.;6.]; [6.;6.]]);;
   
 let print_lists lsts =
   let print_list =
@@ -144,4 +147,4 @@ let print_lists lsts =
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
 let _ = print_lists test
-
+*)
