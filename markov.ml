@@ -1,6 +1,7 @@
 open Core.Std
 open Signatures
 open Matrix
+open Cartesian_graph (* Is this a problem? *)
 
 module Markov : CLUSTER =
   functor (MatrixMod : MATRIX) ->
@@ -36,7 +37,22 @@ struct
 	  loop (col+1)
 	)
     in 
-    loop 0
+    let newmat = loop 0 in
+    let rec add_loops col =
+      if col = dimy then newmat else
+	FloatMatrix.(
+	  let elts = get_column newmat col in
+	  let max arr = Array.fold_right arr ~f:max ~init:(arr.(0)) in
+	  Array.iteri elts ~f:(fun r _ ->
+	    if r = col then
+	      begin 
+		set (r,col) newmat 0.0;
+		set (r,col) newmat (max elts)
+	      end 
+	    else ());
+	  add_loops (col+1)
+	)
+    in add_loops 0
 
   let normalize (m: FloatMatrix.t) : FloatMatrix.t =
     let (_, dimy) = FloatMatrix.dimensions m in
@@ -87,7 +103,6 @@ struct
       | Markov (e,r) -> (e,r)
     in 
     let rec iterate mat =
-      FloatMatrix.print mat;
       if has_converged mat then
 	  interpret mat
       else 
@@ -96,7 +111,8 @@ struct
 	  last_matrix := mat;
 	  iterate newm
 	end 
-    in iterate (normalize (toFloatMat m))
+    in
+    iterate (normalize (toFloatMat m))
 
 end
 
@@ -116,11 +132,12 @@ module IntMatrix = ArrayMatrix(IntCompare)
 
 module IntMarkov = Markov(IntMatrix)
 
-let test = IntMarkov.cluster (Markov (2,2.)) (IntMatrix.of_list [[0;1;0;0];
-								 [1;0;100;0];
-								 [0;100;0;1];
-								 [0;0;1;0]])
+module IntToGraph = Cartesian(IntMatrix)
 
+let test = IntMarkov.cluster (Markov (2,Float.of_string (Sys.argv.(1))))
+  (IntToGraph.to_graph [[1.;2.]; [2.;1.]; [1.;1.];
+			[6.;7.]; [7.;6.]; [6.;6.]])
+  
 let print_lists lsts =
   let print_list =
     List.iter ~f:(fun e -> print_int e; print_string " ")
