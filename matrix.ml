@@ -43,12 +43,13 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
       done;
     res 							
 
+  let map m ~f = Array.map m ~f:(fun r -> Array.map r ~f)
+
   let get ((r, c) : (int * int)) (m: t) : elt = 
     m.(r).(c)
 
   let set ((r, c) : (int * int)) (m : t) (new_elt : elt) : unit =
     m.(r).(c) <- new_elt
-    
 
   let minimum (m : t) : elt =
     let minval a b = match C.compare a b with
