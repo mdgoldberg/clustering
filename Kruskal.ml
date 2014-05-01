@@ -52,24 +52,30 @@ struct
     let (size, _) = M.dimensions m in
     let edges = make_edgelist m in 
     let forest = make_forest m (size - 1) in
-    let links = ref 0 in
+    let links = 0 in
     let max_links = size - n in
     let spanning (forest: int list list) (edges: (elt * int * int) Heap.t) : int list list = 
-      while (not (Heap.is_empty edges) && not (is_spanning forest (size - 1)) && (!links < max_links))
-      do
-	(match Heap.top edges with
-	 | None -> (*this should never happen*) ()
-	 | Some (e, v1, v2)-> (match List.find forest (List.mem [[v1]]) with
-			       | None -> ()
-			       | Some (xs) -> if (List.mem xs v2) then (*a cycle would occur*)() 
-					      else let Some ys = List.find forest (List.mem [[v2]]) in
-						   List.append ys xs;
-						   links := !links + 1;));
-	Heap.remove_top edges;
-				(*Check if the edge will connect two trees*)
-				(*Connect two trees*)
-      done;
-      forest
+      let rec while_loop (forest': int list list) (edges': (elt * int * int) Heap.t) (links': int) : int list list =
+	if Heap.is_empty edges' || is_spanning forest' (size - 1) || (links' >= max_links)
+	then forest'
+	else
+	(match Heap.top edges' with
+	 | None -> let _ = Heap.remove_top edges' in 
+		   while_loop forest' edges' links'
+	 | Some (_, v1, v2)-> (match List.find forest' (List.mem [[v1]]) with
+			       | None -> let _ = Heap.remove_top edges' in 
+					 while_loop forest' edges' links'
+			       | Some (xs) -> if (List.mem xs v2) 
+						   (*a cycle would occur*)
+					      then let _ = Heap.remove_top edges' in 
+						   while_loop forest' edges' links'
+					      else let Some ys = List.find forest' (List.mem [[v2]]) in
+						   let forest_added = (List.append xs ys) :: forest' in
+						   let forest_removed = List.filter ~f:(fun x -> x <> xs || x <> ys) forest_added in
+						   Heap.remove_top edges';
+						   while_loop forest_removed edges' (links' + 1)))
+      in
+    while_loop forest edges links
     in
     spanning forest edges
 end
@@ -110,9 +116,9 @@ module FloatKruskal = Kruskal(FloatMatrix)
 
 module IntKruskal = Kruskal(IntMatrix)
 
-let test = IntKruskal.cluster (2 (IntMatrix.of_list [[0;1;0];
+let test = IntKruskal.cluster (Kruskal 2) (IntMatrix.of_list [[0;1;0];
 								 [1;0;100];
-								 [0;100;0]]))
+								 [0;100;0]])
 
 let print_lists lsts =
   let print_list =
