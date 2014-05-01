@@ -85,6 +85,8 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
     | Greater -> 1
     | Equal -> 0
     | Less -> (-1)
+
+  let zero = C.zero
 	 
 end
 
