@@ -80,7 +80,7 @@ struct
     spanning forest edges
 end
 
-
+(*TEST CODE*)
 module FloatCompare : COMPARABLE with type t = float =
   struct
     type t = float
@@ -126,3 +126,5 @@ let print_lists lsts =
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
 let _ = print_lists test
+
+ *)
