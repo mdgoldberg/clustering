@@ -4,8 +4,9 @@ open Str
 open Signatures
 open Matrix
 open Markov
-open Kruskal
+(* open Kruskal *)
 open Cartesian_graph
+open Stats
 
 (*
 
@@ -43,16 +44,21 @@ struct
   let t_of_float f = f
 end
 
+
 module IntMatrix = ArrayMatrix(IntCompare)
 module FloatMatrix = ArrayMatrix(FloatCompare)
 module IntToGraph = Cartesian(IntMatrix)
 module FloatToGraph = Cartesian(FloatMatrix)
 module IntMarkov = Markov(IntMatrix)
 module FloatMarkov = Markov(FloatMatrix)
+(*
 module IntKruskal = Kruskal(IntMatrix)
 module FloatKruskal = Kruskal(FloatMatrix)
+*)
+module IntStats = Stats(IntMatrix)
+module FloatStats = Stats(FloatMatrix)
 
-let usage = ("\nUsage:\n./main.native markov|kruskal csvfile float|int " ^
+let usage = ("Usage:\n./main.native markov|kruskal csvfile float|int " ^
       "[--arg1=A] [--arg2=B] [--cartesian] [--has-labels]\n" ^
       "order doesn't matter.\n")
 
@@ -176,15 +182,36 @@ let print_clusters (lsts : int list list) : unit =
     List.iter ~f:(fun e -> print_string (get_labels.(e)); print_string " ")
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
+let rec print_float_opts (lst : float option list) : unit =
+  match lst with
+  | hd :: tl ->
+    begin
+      match hd with
+      | Some x -> print_float x; print_string "  "
+      | None -> print_string "None  "
+    end ;
+    print_float_opts tl
+  | [] -> print_string "\n"
 
-match matrix_type, alg_type with
-  | "int", "markov" -> print_clusters
-    (IntMarkov.cluster (Markov (arg1,arg2)) (process_file_int filename))
+let _ = match matrix_type, alg_type with
+  | "int", "markov" ->
+    let mat = process_file_int filename in
+    let clusts = IntMarkov.cluster (Markov (arg1,arg2)) mat in
+    print_string "Clustering:\n";
+    print_clusters clusts;
+    print_string "Density (lower numbers -> more dense, None is bad):\n";
+    let dense_vals = IntStats.avg_dist_all mat clusts in
+    print_float_opts dense_vals;
+    print_string "Spread (higher numbers -> more spread, None is good):\n";
+    let spread_vals = IntStats.dist_between_all mat clusts in
+    if List.length spread_vals > 0 then
+      print_float_opts spread_vals
+    else print_string "Only 1 cluster.\n"
   | "float", "markov" -> print_clusters
     (FloatMarkov.cluster (Markov (arg1,arg2)) (process_file_float filename))
-  | "int", "kruskal" -> print_clusters
+(*  | "int", "kruskal" -> print_clusters
     (IntKruskal.cluster (Kruskal arg1) (process_file_int filename))
   | "float", "kruskal" -> print_clusters
-    (FloatKruskal.cluster (Kruskal arg1) (process_file_float filename))
+    (FloatKruskal.cluster (Kruskal arg1) (process_file_float filename)) *)
   | _ -> invalid_arg "no clustering algorithm found"
 
