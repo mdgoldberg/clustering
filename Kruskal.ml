@@ -64,7 +64,7 @@ struct
 	 | None -> let _ = Heap.remove_top edges' in 
 		   (*Printf.printf "Heap empty";*)
 		   while_loop forest' edges' links'
-	 | Some (_, v1, v2)-> (match List.find forest' (List.mem [[v1]]) with
+	 | Some (_, v1, v2)-> (match List.find forest' (fun x -> List.mem x v1) with
 			       | None -> let _ = Heap.remove_top edges' in
 					 (*Printf.printf "Vertex 1 not in tree";*)
 					 while_loop forest' edges' links'
@@ -73,7 +73,7 @@ struct
 					      then let _ = Heap.remove_top edges' in 
 						   while_loop forest' edges' links'
 					      else 
-						   (match List.find forest' (List.mem [[v2]]) with
+						   (match List.find forest' (fun x -> List.mem x v2) with
 						    | None -> let _ = Heap.remove_top edges' in 
 							      (*Printf.printf "Vertex 2 not in tree";*)
 							      while_loop forest' edges' links'
@@ -126,12 +126,14 @@ module IntKruskal = Kruskal(IntMatrix)
 
 module IntToGraph = Cartesian(IntMatrix)
 
+module FloatToGraph = Cartesian(FloatMatrix)
+
 let test = IntKruskal.cluster (Kruskal 1) (IntMatrix.of_list [[0;1;0];
 							      [1;0;100];
 							      [0;100;0]])
 
-let test2 = IntKruskal.cluster (Kruskal 3)
-  (IntToGraph.to_graph [[1.;2.]; [2.;1.]; [1.;1.];
+let test2 = FloatKruskal.cluster (Kruskal 4)
+  (FloatToGraph.to_graph [[1.;2.]; [2.;1.]; [1.;1.];
 			[6.;7.]; [7.;6.]; [6.;6.]]);;
 
 let print_lists lsts =
