@@ -64,7 +64,7 @@ struct
 	 | None -> let _ = Heap.remove_top edges' in 
 		   (*Printf.printf "Heap empty";*)
 		   while_loop forest' edges' links'
-	 | Some (_, v1, v2)-> (match List.find forest' ~f:(List.mem [[v1]]) with
+	 | Some (_, v1, v2)-> (match List.find forest' ~f:(fun x -> List.mem x v1) with
 			       | None -> let _ = Heap.remove_top edges' in
 					 (*Printf.printf "Vertex 1 not in tree";*)
 					 while_loop forest' edges' links'
@@ -72,8 +72,7 @@ struct
 						   (*a cycle would occur*)
 					      then let _ = Heap.remove_top edges' in 
 						   while_loop forest' edges' links'
-					      else 
-						   (match List.find forest' ~f:(List.mem [[v2]]) with
+					      else (match List.find forest' ~f:(fun x -> List.mem x v2) with
 						    | None -> let _ = Heap.remove_top edges' in 
 							      (*Printf.printf "Vertex 2 not in tree";*)
 							      while_loop forest' edges' links'
