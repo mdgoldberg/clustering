@@ -72,8 +72,7 @@ struct
 						   (*a cycle would occur*)
 					      then let _ = Heap.remove_top edges' in 
 						   while_loop forest' edges' links'
-					      else 
-						   (match List.find forest' ~f:(fun x -> List.mem x v2) with
+					      else (match List.find forest' ~f:(fun x -> List.mem x v2) with
 						    | None -> let _ = Heap.remove_top edges' in 
 							      (*Printf.printf "Vertex 2 not in tree";*)
 							      while_loop forest' edges' links'
@@ -116,6 +115,7 @@ module IntCompare : COMPARABLE with type t = int =
 	  let t_of_float f = Int.of_float f
 end
 
+(*
 module FloatMatrix = ArrayMatrix(FloatCompare)
 
 module IntMatrix = ArrayMatrix(IntCompare)
@@ -142,4 +142,4 @@ let print_lists lsts =
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
 let _ = print_lists test
-
+*)
