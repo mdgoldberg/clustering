@@ -9,7 +9,7 @@ open Cartesian_graph
 (*
 
 usage:
-./main.native markov|kruskal [--arg1=A] [--arg2=B] [--cartesian] csvfile float|int
+./main.native markov|kruskal [--arg1=A] [--arg2=B] [--cartesian] [--has-labels] csvfile float|int
 
 (order doesn't matter)
 
@@ -50,7 +50,8 @@ module IntMarkov = Markov(IntMatrix)
 module FloatMarkov = Markov(FloatMatrix)
 
 let usage = ("\nUsage:\n./main.native markov|kruskal csvfile float|int " ^
-      "[--arg1=A] [--arg2=B] [--cartesian]\norder doesn't matter.\n")
+      "[--arg1=A] [--arg2=B] [--cartesian] [--has-labels]\n" ^
+      "order doesn't matter.\n")
 
 let filename : string =
   let arr = Array.filter Sys.argv
@@ -66,6 +67,9 @@ let filename : string =
 
 let cartesian : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--cartesian")
+
+let labels : bool =
+  Array.exists Sys.argv ~f:(fun arg -> arg = "--has-labels")
 
 let matrix_type : string =
   let arr =
@@ -94,13 +98,12 @@ let arg1 : int =
   in 
   try
     let s = arr.(0) in
-    let first_ind = (String.index_exn s '=') + 1 in
-    let strnum = String.slice s first_ind (String.length s) in
+    let strnum = String.drop_prefix s 7 in
     Int.of_string strnum
   with _ ->
     match alg_type with
     | "markov" -> 2
-    | "kruskal" -> 0 (* Kruskal default *)
+    | "kruskal" -> 0 (* TODO Kruskal default *)
     | _ -> failwith "already checked, so not possible"
 
 let arg2 : float =
@@ -110,8 +113,7 @@ let arg2 : float =
   in 
   try
     let s = arr.(0) in
-    let first_ind = (String.index_exn s '=') + 1 in
-    let strnum = String.slice s first_ind (String.length s) in
+    let strnum = String.drop_prefix s 7 in
     Float.of_string strnum
   with _ ->
     match alg_type with
@@ -122,7 +124,11 @@ let arg2 : float =
 
 let process_file_float (filename : string) : FloatMatrix.t =
   let process_line (line : string) : float list = 
-    let charnums = String.split (String.strip line) ~on:(',') in
+    let raw_charnums = String.split (String.strip line) ~on:(',') in
+    let charnums = match raw_charnums with
+      | _ :: tl -> if labels then tl else raw_charnums
+      | [] -> failwith "Error: empty line"
+    in 
     List.map charnums ~f:Float.of_string
   in
   let lines = In_channel.read_lines filename in
@@ -133,7 +139,11 @@ let process_file_float (filename : string) : FloatMatrix.t =
 
 let process_file_int (filename : string) : IntMatrix.t =
   let process_line (line : string) : float list = 
-    let charnums = String.split (String.strip line) ~on:(',') in
+    let raw_charnums = String.split (String.strip line) ~on:(',') in
+    let charnums = match raw_charnums with
+      | _ :: tl -> if labels then tl else raw_charnums
+      | [] -> failwith "Error: empty line"
+    in 
     List.map charnums ~f:Float.of_string
   in
   let lines = In_channel.read_lines filename in
@@ -144,19 +154,32 @@ let process_file_int (filename : string) : IntMatrix.t =
     IntMatrix.of_list (List.map lsts
 			 ~f:(fun lst -> List.map lst ~f:Int.of_float))
 
+let get_labels : string array =
+  let lines = In_channel.read_lines filename in
+  let lines_arr = List.to_array lines in
+  if labels then
+    let proc_line line =
+      let comma_ind = String.index_exn line ',' in
+      let len = String.length line in
+      String.drop_suffix line (len - comma_ind)
+    in 
+    Array.map lines_arr ~f:proc_line
+  else 
+    Array.mapi lines_arr ~f:(fun i _ -> Int.to_string i)
+    
+
 let print_clusters (lsts : int list list) : unit =
   let print_list =
-    List.iter ~f:(fun e -> print_int e; print_string " ")
+    List.iter ~f:(fun e -> print_string (get_labels.(e)); print_string " ")
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
-(*
-  let module ClusterMod = match matrix_type (), alg_type () with
-  | "int", "markov" -> IntMarkov
-  | "float", "markov" -> FloatMarkov
-  | "int", "kruskal" -> (* IntKruskal *) failwith "not done yet"
+
+match matrix_type, alg_type with
+  | "int", "markov" -> print_clusters
+    (IntMarkov.cluster (Markov (arg1,arg2)) (process_file_int filename))
+  | "float", "markov" -> print_clusters
+    (FloatMarkov.cluster (Markov (arg1,arg2)) (process_file_float filename))
+  | "int", "kruskal" -> (* IntKruskal*) failwith "not done yet"
   | "float", "kruskal" -> (* FloatKruskal *) failwith "not done yet"
   | _ -> invalid_arg "no clustering algorithm found"
-  in 
-*)
-let _ = print_clusters (IntMarkov.cluster (Markov (arg1,arg2))
-			  (process_file_int filename))
+
