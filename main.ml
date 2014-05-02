@@ -74,11 +74,16 @@ let filename : string =
     print_string usage;
     invalid_arg "FILE csvfile NOT FOUND"
 
+let lines : string list = In_channel.read_lines filename
+
 let cartesian : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--cartesian")
 
 let labels : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--has-labels")
+
+let verbose : bool =
+  Array.exists Sys.argv ~f:(fun arg -> arg = "--verbose")
 
 let matrix_type : string =
   let arr =
@@ -112,7 +117,7 @@ let arg1 : int =
   with _ ->
     match alg_type with
     | "markov" -> 2
-    | "kruskal" -> 0 (* TODO Kruskal default *)
+    | "kruskal" -> (List.length lines) / 2
     | _ -> failwith "already checked, so not possible"
 
 let arg2 : float =
@@ -126,12 +131,12 @@ let arg2 : float =
     Float.of_string strnum
   with _ ->
     match alg_type with
-    | "markov" -> 2.
+    | "markov" -> 3.
     | "kruskal" -> 0. (* argument doesn't matter *)
     | _ -> failwith "already checked, so not possible"
 
 
-let process_file_float (filename : string) : FloatMatrix.t =
+let process_file_float () : FloatMatrix.t =
   let process_line (line : string) : float list = 
     let raw_charnums = String.split (String.strip line) ~on:(',') in
     let charnums = match raw_charnums with
@@ -140,13 +145,12 @@ let process_file_float (filename : string) : FloatMatrix.t =
     in 
     List.map charnums ~f:Float.of_string
   in
-  let lines = In_channel.read_lines filename in
   if cartesian then
     FloatToGraph.to_graph (List.map lines ~f:process_line)
   else 
     FloatMatrix.of_list (List.map lines ~f:process_line)
 
-let process_file_int (filename : string) : IntMatrix.t =
+let process_file_int () : IntMatrix.t =
   let process_line (line : string) : float list = 
     let raw_charnums = String.split (String.strip line) ~on:(',') in
     let charnums = match raw_charnums with
@@ -155,7 +159,6 @@ let process_file_int (filename : string) : IntMatrix.t =
     in 
     List.map charnums ~f:Float.of_string
   in
-  let lines = In_channel.read_lines filename in
   let lsts = List.map lines ~f:process_line in
   if cartesian then
     IntToGraph.to_graph lsts
@@ -164,7 +167,6 @@ let process_file_int (filename : string) : IntMatrix.t =
 			 ~f:(fun lst -> List.map lst ~f:Int.of_float))
 
 let get_labels : string array =
-  let lines = In_channel.read_lines filename in
   let lines_arr = List.to_array lines in
   if labels then
     let proc_line line =
@@ -195,8 +197,8 @@ let rec print_float_opts (lst : float option list) : unit =
 
 let _ = match matrix_type, alg_type with
   | "int", "markov" ->
-    let mat = process_file_int filename in
-    let clusts = IntMarkov.cluster (Markov (arg1,arg2)) mat in
+    let mat = process_file_int () in
+    let clusts = IntMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
     print_string "Clustering:\n";
     print_clusters clusts;
     print_string "Density (lower numbers -> more dense, None is bad):\n";
@@ -207,8 +209,19 @@ let _ = match matrix_type, alg_type with
     if List.length spread_vals > 0 then
       print_float_opts spread_vals
     else print_string "Only 1 cluster.\n"
-  | "float", "markov" -> print_clusters
-    (FloatMarkov.cluster (Markov (arg1,arg2)) (process_file_float filename))
+  | "float", "markov" ->
+    let mat = process_file_float () in
+    let clusts = FloatMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
+    print_string "Clustering:\n";
+    print_clusters clusts;
+    print_string "Density (lower numbers -> more dense, None is bad):\n";
+    let dense_vals = FloatStats.avg_dist_all mat clusts in
+    print_float_opts dense_vals;
+    print_string "Spread (higher numbers -> more spread, None is good):\n";
+    let spread_vals = FloatStats.dist_between_all mat clusts in
+    if List.length spread_vals > 0 then
+      print_float_opts spread_vals
+    else print_string "Only 1 cluster.\n"
 (*  | "int", "kruskal" -> print_clusters
     (IntKruskal.cluster (Kruskal arg1) (process_file_int filename))
   | "float", "kruskal" -> print_clusters

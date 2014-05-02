@@ -41,7 +41,7 @@ sig
 
   exception  Invalid_Dimensions
 
-  val zero: elt
+  val zero : elt
 
   (*creates a matrix out of list of lists*)
   val of_list : elt list list -> t
@@ -91,7 +91,7 @@ sig
 end
 
 type cluster_args_t = | Kruskal of int
-		      | Markov of int * float
+		      | Markov of int * float * bool
 
 (*signature for graph clustering algorithms:
  * Kruskal's Algorithm and Markov Process Clustering *)
@@ -100,7 +100,9 @@ module type CLUSTER =
   sig 
 
     (* The first argument is for the parameters of that
-     * specific algorithm. *)
+     * specific algorithm.
+     * The second argument is the matrix, and the third argument
+     * is a verbose option. *)
     val cluster: cluster_args_t -> MatrixMod.t -> int list list
 end
 
