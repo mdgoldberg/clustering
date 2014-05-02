@@ -72,16 +72,22 @@ let filename : string =
     print_string usage;
     invalid_arg "FILE csvfile NOT FOUND"
 
-let lines : string list = In_channel.read_lines filename
-
 let cartesian : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--cartesian")
 
 let labels : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--has-labels")
 
+let header : bool =
+  Array.exists Sys.argv ~f:(fun arg -> arg = "--has-header")
+
 let verbose : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--verbose")
+
+let lines : string list = let raw_lines = In_channel.read_lines filename in
+			  match raw_lines with
+			  | _ :: tl -> if header then tl else raw_lines
+			  | [] -> failwith "empty file"
 
 let matrix_type : string =
   let arr =
@@ -133,10 +139,23 @@ let arg2 : float =
     | "kruskal" -> 0. (* argument doesn't matter *)
     | _ -> failwith "already checked, so not possible"
 
+let delim : char =
+  let arr =
+    Array.filter Sys.argv~f:(fun arg -> String.length arg >= 8 &&
+      String.slice arg 0 8 = "--delim=")
+  in 
+  try
+    let s = arr.(0) in
+    let delim_str = String.drop_prefix s 8 in
+    print_string delim_str;
+    Char.of_string delim_str
+  with _ ->
+    match alg_type with
+    | _ -> ','
 
 let process_file_float () : FloatMatrix.t =
   let process_line (line : string) : float list = 
-    let raw_charnums = String.split (String.strip line) ~on:(',') in
+    let raw_charnums = String.split (String.strip line) ~on:delim in
     let charnums = match raw_charnums with
       | _ :: tl -> if labels then tl else raw_charnums
       | [] -> failwith "Error: empty line"
@@ -150,7 +169,7 @@ let process_file_float () : FloatMatrix.t =
 
 let process_file_int () : IntMatrix.t =
   let process_line (line : string) : float list = 
-    let raw_charnums = String.split (String.strip line) ~on:(',') in
+    let raw_charnums = String.split (String.strip line) ~on:delim in
     let charnums = match raw_charnums with
       | _ :: tl -> if labels then tl else raw_charnums
       | [] -> failwith "Error: empty line"
@@ -168,7 +187,7 @@ let get_labels : string array =
   let lines_arr = List.to_array lines in
   if labels then
     let proc_line line =
-      let comma_ind = String.index_exn line ',' in
+      let comma_ind = String.index_exn line delim in
       let len = String.length line in
       String.drop_suffix line (len - comma_ind)
     in 
