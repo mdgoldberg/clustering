@@ -81,6 +81,13 @@ struct
 
   let interpret m =
     let (numrows,_) = FloatMatrix.dimensions m in
+    let rec unique (xs : 'a list) : 'a list =
+      match xs with
+      | [] -> []
+      | hd::tl ->
+	let tl' = unique tl in
+	if List.mem tl' hd then tl' else hd::tl'
+    in 
     let rec loop row results =
       if row = numrows then results else
 	FloatMatrix.(
@@ -89,8 +96,8 @@ struct
 	    if float_of_elt e > 0. then i :: res else res) in
 	  loop (row+1) (clust :: results)
 	)
-    in List.filter_map (loop 0 []) ~f:(fun cl ->
-      if (cl = []) then None else Some (List.sort ~cmp:(-) cl))
+    in unique (List.filter_map (loop 0 []) ~f:(fun cl ->
+      if (cl = []) then None else Some (List.sort cl ~cmp:(-))))
 
 
   (* has_converged doesn't work in cyclic case - maybe change last_matrix to a FloatMatrix.t ref list *)
@@ -98,11 +105,12 @@ struct
   let has_converged m = m = (!last_matrix)
 
   let cluster (args : cluster_args_t) (m : MatrixMod.t) : int list list =
-    let (e,r) = match args with
+    let (e,r,verbose) = match args with
       | Kruskal _ -> failwith "Wrong argument type"
-      | Markov (e,r) -> (e,r)
+      | Markov (e,r,verbose) -> (e,r,verbose)
     in 
     let rec iterate mat =
+      if verbose then FloatMatrix.print mat else ();
       if has_converged mat then
 	  interpret mat
       else 
