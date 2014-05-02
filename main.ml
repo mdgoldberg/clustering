@@ -147,7 +147,6 @@ let delim : char =
   try
     let s = arr.(0) in
     let delim_str = String.drop_prefix s 8 in
-    print_string delim_str;
     Char.of_string delim_str
   with _ ->
     match alg_type with
