@@ -197,8 +197,8 @@ let get_labels : string array =
 
 let print_clusters (lsts : int list list) : unit =
   let print_list =
-    List.iter ~f:(fun e -> print_string (get_labels.(e)); print_string " ")
-  in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
+      List.iter ~f:(fun e -> print_string (get_labels.(e)); print_string " ")
+  in List.iter ~f:(fun lst -> print_list lst; print_string "\n\n") lsts
 
 let rec print_float_opts (lst : float option list) : unit =
   match lst with
