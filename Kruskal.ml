@@ -1,10 +1,11 @@
 open Core.Std
 open Matrix
 open Signatures
+open Cartesian_graph
 
 
-module Kruskal : CLUSTER = 
-	functor (M: MATRIX) ->
+module Kruskal : CLUSTER =
+  functor (M: MATRIX) ->
 struct
   type elt = M.elt
 
@@ -28,21 +29,21 @@ struct
     in
     q
   
-  let make_forest (m: M.t) (size : int): int list list = 
+  let make_forest (size : int): int list list = 
     let rec loop (s: int list list) (n : int) =
       if n < 0
       then s
-      else loop ([size] :: s) (n - 1)
+      else loop ([n] :: s) (n - 1)
     in
-    loop [[]] size
+    List.filter (loop [[]] size) ~f:(fun x -> x <> [])
 	 
   let is_spanning (trees: int list list) (size: int) : bool =
     let rec sizes (n : int) =
       match n with
       | 0 -> [0]
-      | x -> n :: (sizes x) in
-    let xs = List.concat trees in
-    (List.fold ~f: (+) ~init: 0 xs) = (List.fold_left ~f: (+) ~init: 0 (sizes size))
+      | _ -> n :: (sizes (n-1)) in
+    let span_weight = (List.fold_left ~f: (+) ~init: 0 (sizes size)) in
+    List.exists trees ~f:(fun xs -> (List.fold ~f: (+) ~init: 0 xs) = span_weight)
 		
   let cluster (args: cluster_args_t) (m : M.t) : int list list =
     let n = match args with
@@ -51,7 +52,7 @@ struct
     in 
     let (size, _) = M.dimensions m in
     let edges = make_edgelist m in 
-    let forest = make_forest m (size - 1) in
+    let forest = make_forest (size - 1) in
     let links = 0 in
     let max_links = size - n in
     let spanning (forest: int list list) (edges: (elt * int * int) Heap.t) : int list list = 
@@ -61,26 +62,33 @@ struct
 	else
 	(match Heap.top edges' with
 	 | None -> let _ = Heap.remove_top edges' in 
+		   (*Printf.printf "Heap empty";*)
 		   while_loop forest' edges' links'
 	 | Some (_, v1, v2)-> (match List.find forest' (List.mem [[v1]]) with
-			       | None -> let _ = Heap.remove_top edges' in 
+			       | None -> let _ = Heap.remove_top edges' in
+					 (*Printf.printf "Vertex 1 not in tree";*)
 					 while_loop forest' edges' links'
-			       | Some (xs) -> if (List.mem xs v2) 
+			       | Some xs -> if (List.mem xs v2) 
 						   (*a cycle would occur*)
 					      then let _ = Heap.remove_top edges' in 
 						   while_loop forest' edges' links'
-					      else let Some ys = List.find forest' (List.mem [[v2]]) in
+					      else 
+						   (match List.find forest' (List.mem [[v2]]) with
+						    | None -> let _ = Heap.remove_top edges' in 
+							      (*Printf.printf "Vertex 2 not in tree";*)
+							      while_loop forest' edges' links'
+						    | Some ys ->
 						   let forest_added = (List.append xs ys) :: forest' in
-						   let forest_removed = List.filter ~f:(fun x -> x <> xs || x <> ys) forest_added in
+						   let forest_removed = List.filter ~f:(fun x -> x <> xs && x <> ys) forest_added in
 						   Heap.remove_top edges';
-						   while_loop forest_removed edges' (links' + 1)))
+						   while_loop forest_removed edges' (links' + 1))))
       in
     while_loop forest edges links
     in
     spanning forest edges
 end
 
-
+(*TEST CODE*)
 module FloatCompare : COMPARABLE with type t = float =
   struct
     type t = float
@@ -108,7 +116,7 @@ module IntCompare : COMPARABLE with type t = int =
 	  let t_of_float f = Int.of_float f
 end
 
- module FloatMatrix = ArrayMatrix(FloatCompare)
+module FloatMatrix = ArrayMatrix(FloatCompare)
 
 module IntMatrix = ArrayMatrix(IntCompare)
 
@@ -116,9 +124,15 @@ module FloatKruskal = Kruskal(FloatMatrix)
 
 module IntKruskal = Kruskal(IntMatrix)
 
-let test = IntKruskal.cluster (Kruskal 2) (IntMatrix.of_list [[0;1;0];
-								 [1;0;100];
-								 [0;100;0]])
+module IntToGraph = Cartesian(IntMatrix)
+
+let test = IntKruskal.cluster (Kruskal 1) (IntMatrix.of_list [[0;1;0];
+							      [1;0;100];
+							      [0;100;0]])
+
+let test2 = IntKruskal.cluster (Kruskal 3)
+  (IntToGraph.to_graph [[1.;2.]; [2.;1.]; [1.;1.];
+			[6.;7.]; [7.;6.]; [6.;6.]]);;
 
 let print_lists lsts =
   let print_list =
@@ -126,3 +140,4 @@ let print_lists lsts =
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
 let _ = print_lists test
+
