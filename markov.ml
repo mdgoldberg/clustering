@@ -31,7 +31,9 @@ struct
       if col = dimy then newmat else
 	MatrixMod.(
 	  let elts = get_column m col in
-	  let new_elts = Array.map elts ~f:(fun e -> float_of_elt e) in
+	  let new_elts = Array.map elts ~f:(fun e ->
+	    let fe = float_of_elt e in
+	    if fe = 0. then fe else 1. /. fe) in
 	  Array.iteri new_elts ~f:(fun r e ->
 	    FloatMatrix.set (r,col) newmat (FloatMatrix.elt_of_float e));
 	  loop (col+1)
