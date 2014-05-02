@@ -149,14 +149,14 @@ let print_clusters (lsts : int list list) : unit =
     List.iter ~f:(fun e -> print_int e; print_string " ")
   in List.iter ~f:(fun lst -> print_list lst; print_string "\n") lsts
 
-(*
+
   let module ClusterMod = match matrix_type (), alg_type () with
   | "int", "markov" -> IntMarkov
   | "float", "markov" -> FloatMarkov
-  | "int", "kruskal" -> (* IntKruskal *) failwith "not done yet"
-  | "float", "kruskal" -> (* FloatKruskal *) failwith "not done yet"
+  | "int", "kruskal" -> IntKruskal (* failwith "not done yet"*)
+  | "float", "kruskal" -> FloatKruskal (* failwith "not done yet" *)
   | _ -> invalid_arg "no clustering algorithm found"
   in 
-*)
+
 let _ = print_clusters (IntMarkov.cluster (Markov (arg1,arg2))
 			  (process_file_int filename))
