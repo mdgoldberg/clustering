@@ -24,7 +24,7 @@ module Stats: STATS =
       
 
     let avg_dist_all (m: Matrix.t) (clst: int list list) : float option list = 
-      List.map clst (fun x -> avg_dist_single m x) 
+      List.map clst ~f:(fun x -> avg_dist_single m x) 
 
     let dist_between_two (m: Matrix.t) (cl1: int list) (cl2: int list) : float option = 
       let arr1 = Array.of_list cl1 in
