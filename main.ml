@@ -48,6 +48,8 @@ module IntToGraph = Cartesian(IntMatrix)
 module FloatToGraph = Cartesian(FloatMatrix)
 module IntMarkov = Markov(IntMatrix)
 module FloatMarkov = Markov(FloatMatrix)
+module IntKruskal = Kruskal(IntMatrix)
+module FloatKruskal = Kruskal(FloatMatrix)
 
 let usage = ("\nUsage:\n./main.native markov|kruskal csvfile float|int " ^
       "[--arg1=A] [--arg2=B] [--cartesian] [--has-labels]\n" ^
@@ -179,7 +181,9 @@ match matrix_type, alg_type with
     (IntMarkov.cluster (Markov (arg1,arg2)) (process_file_int filename))
   | "float", "markov" -> print_clusters
     (FloatMarkov.cluster (Markov (arg1,arg2)) (process_file_float filename))
-  | "int", "kruskal" -> (* IntKruskal*) failwith "not done yet"
-  | "float", "kruskal" -> (* FloatKruskal *) failwith "not done yet"
+  | "int", "kruskal" -> print_clusters
+    (IntKruskal.cluster (Kruskal arg1) (process_file_int filename))
+  | "float", "kruskal" -> print_clusters
+    (FloatKruskal.cluster (Kruskal arg1) (process_file_float filename))
   | _ -> invalid_arg "no clustering algorithm found"
 
