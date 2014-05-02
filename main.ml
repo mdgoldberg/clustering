@@ -4,7 +4,7 @@ open Str
 open Signatures
 open Matrix
 open Markov
-(* open Kruskal *)
+open Kruskal
 open Cartesian_graph
 open Stats
 
@@ -51,10 +51,8 @@ module IntToGraph = Cartesian(IntMatrix)
 module FloatToGraph = Cartesian(FloatMatrix)
 module IntMarkov = Markov(IntMatrix)
 module FloatMarkov = Markov(FloatMatrix)
-(*
 module IntKruskal = Kruskal(IntMatrix)
 module FloatKruskal = Kruskal(FloatMatrix)
-*)
 module IntStats = Stats(IntMatrix)
 module FloatStats = Stats(FloatMatrix)
 
@@ -222,9 +220,31 @@ let _ = match matrix_type, alg_type with
     if List.length spread_vals > 0 then
       print_float_opts spread_vals
     else print_string "Only 1 cluster.\n"
-(*  | "int", "kruskal" -> print_clusters
-    (IntKruskal.cluster (Kruskal arg1) (process_file_int filename))
-  | "float", "kruskal" -> print_clusters
-    (FloatKruskal.cluster (Kruskal arg1) (process_file_float filename)) *)
+  | "int", "kruskal" ->
+    let mat = process_file_int () in
+    let clusts = IntKruskal.cluster (Kruskal arg1) mat in
+    print_string "Clustering:\n";
+    print_clusters clusts;
+    print_string "Density (lower numbers -> more dense, None is bad):\n";
+    let dense_vals = IntStats.avg_dist_all mat clusts in
+    print_float_opts dense_vals;
+    print_string "Spread (higher numbers -> more spread, None is good):\n";
+    let spread_vals = IntStats.dist_between_all mat clusts in
+    if List.length spread_vals > 0 then
+      print_float_opts spread_vals
+    else print_string "Only 1 cluster.\n"
+  | "float", "kruskal" ->
+    let mat = process_file_float () in
+    let clusts = FloatKruskal.cluster (Kruskal arg1) mat in
+    print_string "Clustering:\n";
+    print_clusters clusts;
+    print_string "Density (lower numbers -> more dense, None is bad):\n";
+    let dense_vals = FloatStats.avg_dist_all mat clusts in
+    print_float_opts dense_vals;
+    print_string "Spread (higher numbers -> more spread, None is good):\n";
+    let spread_vals = FloatStats.dist_between_all mat clusts in
+    if List.length spread_vals > 0 then
+      print_float_opts spread_vals
+    else print_string "Only 1 cluster.\n"
   | _ -> invalid_arg "no clustering algorithm found"
 
