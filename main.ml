@@ -4,6 +4,7 @@ open Str
 open Signatures
 open Matrix
 open Markov
+open Kruskal
 open Cartesian_graph
 
 (*
