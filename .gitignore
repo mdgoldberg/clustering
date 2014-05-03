@@ -1,5 +1,6 @@
 *.native
 _build/
+video\ and\ audio/
 *~
 *conflicted copy*
 *.pdf

@@ -9,11 +9,13 @@ module Kruskal : CLUSTER =
 struct
   type elt = M.elt
 
+  (* Comparison function for two elts *)
   let edge_compare (x : (elt * int * int)) (y : (elt * int * int)) = 
     let (a, _, _) = x in
     let (b, _, _) = y in
     M.compare_elts a b
 
+  (* Creates a minimum heap out of the edges of the matrix *)
   let make_edgelist (m : M.t) : ((elt * int * int) Heap.t) =
     let q = Heap.create ~cmp: edge_compare () in
     let (a, b) = M.dimensions m in
@@ -29,6 +31,7 @@ struct
     in
     q
   
+  (* Creates an initial forest out of the indices of the matrix *)
   let make_forest (size : int): int list list = 
     let rec loop (s: int list list) (n : int) =
       if n < 0
@@ -36,7 +39,8 @@ struct
       else loop ([n] :: s) (n - 1)
     in
     List.filter (loop [[]] size) ~f:(fun x -> x <> [])
-	 
+
+  (* Checks whether a tree is spanning or not *)	 
   let is_spanning (trees: int list list) (size: int) : bool =
     let rec sizes (n : int) =
       match n with
@@ -45,6 +49,7 @@ struct
     let span_weight = (List.fold_left ~f: (+) ~init: 0 (sizes size)) in
     List.exists trees ~f:(fun xs -> (List.fold ~f: (+) ~init: 0 xs) = span_weight)
 		
+  (* Modified Kruskal's algorithm *)
   let cluster (args: cluster_args_t) (m : M.t) : int list list =
     let n = match args with
       | Kruskal x -> x
@@ -61,20 +66,16 @@ struct
 	then forest'
 	else
 	(match Heap.top edges' with
-	 | None -> let _ = Heap.remove_top edges' in 
-		   (*Printf.printf "Heap empty";*)
+	 | None -> let _ = Heap.remove_top edges' in
 		   while_loop forest' edges' links'
 	 | Some (_, v1, v2)-> (match List.find forest' ~f:(fun x -> List.mem x v1) with
 			       | None -> let _ = Heap.remove_top edges' in
-					 (*Printf.printf "Vertex 1 not in tree";*)
 					 while_loop forest' edges' links'
-			       | Some xs -> if (List.mem xs v2) 
-						   (*a cycle would occur*)
+			       | Some xs -> if (List.mem xs v2)
 					      then let _ = Heap.remove_top edges' in 
 						   while_loop forest' edges' links'
 					      else (match List.find forest' ~f:(fun x -> List.mem x v2) with
-						    | None -> let _ = Heap.remove_top edges' in 
-							      (*Printf.printf "Vertex 2 not in tree";*)
+						    | None -> let _ = Heap.remove_top edges' in
 							      while_loop forest' edges' links'
 						    | Some ys ->
 						   let forest_added = (List.append xs ys) :: forest' in

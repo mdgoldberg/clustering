@@ -191,10 +191,14 @@ let get_labels : string array =
     Array.mapi lines_arr ~f:(fun i _ -> Int.to_string i)
     
 
+(* PRINTING FUNCTIONS *)
+
 let print_clusters (lsts : int list list) : unit =
   let print_list =
       List.iter ~f:(fun e -> print_string (get_labels.(e)); print_string " ")
-  in List.iter ~f:(fun lst -> print_list lst; print_string "\n\n") lsts
+  in List.iter lsts ~f:(fun lst ->
+    print_list lst;
+    Printf.printf "\nCluster Size: %d\n\n" (List.length lst))
 
 let rec print_float_opts (lst : float option list) : unit =
   match lst with
@@ -207,58 +211,46 @@ let rec print_float_opts (lst : float option list) : unit =
     print_float_opts tl
   | [] -> print_string "\n"
 
+let print_results_int mat clusts =
+    print_string "Clustering:\n\n";
+    print_clusters clusts;
+    print_string "Density (lower numbers -> more dense, None is bad):\n";
+    let dense_vals = IntStats.avg_dist_all mat clusts in
+    print_float_opts dense_vals;
+    print_string "Spread (higher numbers -> more spread, None is good):\n";
+    let spread_vals = IntStats.dist_between_all mat clusts in
+    if List.length spread_vals > 0 then
+      print_float_opts spread_vals
+    else print_string "Only 1 cluster.\n"
+
+let print_results_float mat clusts =
+  print_string "Clustering:\n\n";
+  print_clusters clusts;
+  print_string "Density (lower numbers -> more dense, None is bad):\n";
+  let dense_vals = FloatStats.avg_dist_all mat clusts in
+  print_float_opts dense_vals;
+  print_string "Spread (higher numbers -> more spread, None is good):\n";
+  let spread_vals = FloatStats.dist_between_all mat clusts in
+  if List.length spread_vals > 0 then
+    print_float_opts spread_vals
+  else print_string "Only 1 cluster.\n"
+
 let _ = match matrix_type, alg_type with
   | "int", "markov" ->
     let mat = process_file_int () in
     let clusts = IntMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
-    print_string "Clustering:\n\n";
-    print_clusters clusts;
-    print_string "Density (lower numbers -> more dense, None is bad):\n";
-    let dense_vals = IntStats.avg_dist_all mat clusts in
-    print_float_opts dense_vals;
-    print_string "Spread (higher numbers -> more spread, None is good):\n";
-    let spread_vals = IntStats.dist_between_all mat clusts in
-    if List.length spread_vals > 0 then
-      print_float_opts spread_vals
-    else print_string "Only 1 cluster.\n"
+    print_results_int mat clusts
   | "float", "markov" ->
     let mat = process_file_float () in
     let clusts = FloatMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
-    print_string "Clustering:\n\n";
-    print_clusters clusts;
-    print_string "Density (lower numbers -> more dense, None is bad):\n";
-    let dense_vals = FloatStats.avg_dist_all mat clusts in
-    print_float_opts dense_vals;
-    print_string "Spread (higher numbers -> more spread, None is good):\n";
-    let spread_vals = FloatStats.dist_between_all mat clusts in
-    if List.length spread_vals > 0 then
-      print_float_opts spread_vals
-    else print_string "Only 1 cluster.\n"
+    print_results_float mat clusts
   | "int", "kruskal" ->
     let mat = process_file_int () in
     let clusts = IntKruskal.cluster (Kruskal arg1) mat in
-    print_string "Clustering:\n\n";
-    print_clusters clusts;
-    print_string "Density (lower numbers -> more dense, None is bad):\n";
-    let dense_vals = IntStats.avg_dist_all mat clusts in
-    print_float_opts dense_vals;
-    print_string "Spread (higher numbers -> more spread, None is good):\n";
-    let spread_vals = IntStats.dist_between_all mat clusts in
-    if List.length spread_vals > 0 then
-      print_float_opts spread_vals
-    else print_string "Only 1 cluster.\n"
+    print_results_int mat clusts
   | "float", "kruskal" ->
     let mat = process_file_float () in
     let clusts = FloatKruskal.cluster (Kruskal arg1) mat in
-    print_string "Clustering:\n\n";
-    print_clusters clusts;
-    print_string "Density (lower numbers -> more dense, None is bad):\n";
-    let dense_vals = FloatStats.avg_dist_all mat clusts in
-    print_float_opts dense_vals;
-    print_string "Spread (higher numbers -> more spread, None is good):\n";
-    let spread_vals = FloatStats.dist_between_all mat clusts in
-    if List.length spread_vals > 0 then
-      print_float_opts spread_vals
-    else print_string "Only 1 cluster.\n"
+    print_results_float mat clusts
   | _ -> invalid_arg "no clustering algorithm found"
 

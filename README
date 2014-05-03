@@ -8,7 +8,6 @@ nodes.  If this flag isn't set, then we interpret the file as a list of points
 in R^n, which we then translate into a matrix of distances.
 
 --arg1=A
-
 If this flag is set, then the first argument to the clustering algorithm will be
 A. For Kruskal, this means it will cluster the data into A clusters.  For
 Markov, this means the expansion parameter will be A. If the flag is absent, it
@@ -16,29 +15,24 @@ will default to 2 for Markov and N/2 for Kruskal (where N is the number of
 nodes).
 
 --arg2=B
-
 If this flag is set, then the second argument to the clustering algorithm will
 be B.  This is meaningless for Kruskal, which only takes one argument, so
 Kruskal's algorithm will ignore this flag.
 
 --has-labels
-
 If this flag is set, then the csv file has labels in its first column. We take
 this into account by skipping the first column during calculation, and then
 using these labels as names for each node when we output the results.
 
 --has-header
-
 If this flag is set, then the csv file has category headers in its first row. We
 take this into account by skipping the first row in our calculations.
 
 --verbose
-
 If this flag is set, then the Markov algorithm will print out the current matrix
 on each iteration. This flag has no implications for Kruskal's algorithm.
 
 --delim='C'
-
 If this flag is set, then the csv file is separated by C instead of by commas.
 For example, if a csv used semicolons to separate its data, then you would use
 the option --delim=';' so that we can take this into account.
