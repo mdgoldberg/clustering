@@ -8,15 +8,6 @@ open Kruskal
 open Cartesian_graph
 open Stats
 
-(*
-
-usage:
-./main.native markov|kruskal [--arg1=A] [--arg2=B] [--cartesian] [--has-labels] csvfile float|int
-
-(order doesn't matter)
-
-*)
-
 module IntCompare : COMPARABLE  with type t = int =
 struct 
   type t = int
@@ -56,8 +47,9 @@ module FloatKruskal = Kruskal(FloatMatrix)
 module IntStats = Stats(IntMatrix)
 module FloatStats = Stats(FloatMatrix)
 
-let usage = ("Usage:\n./main.native markov|kruskal csvfile float|int " ^
-      "[--arg1=A] [--arg2=B] [--cartesian] [--has-labels]\n" ^
+let usage = ("Usage:\n./main.native csvfile float|int markov|kruskal " ^
+      "[--arg1=A] [--arg2=B] [--matrix] [--has-labels] [--has-header] " ^
+      "[--verbose] [--delim='C']\n" ^
       "order doesn't matter.\n")
 
 let filename : string =
@@ -72,8 +64,8 @@ let filename : string =
     print_string usage;
     invalid_arg "FILE csvfile NOT FOUND"
 
-let cartesian : bool =
-  Array.exists Sys.argv ~f:(fun arg -> arg = "--cartesian")
+let matrix : bool =
+  Array.exists Sys.argv ~f:(fun arg -> arg = "--matrix")
 
 let labels : bool =
   Array.exists Sys.argv ~f:(fun arg -> arg = "--has-labels")
@@ -148,39 +140,43 @@ let delim : char =
     let s = arr.(0) in
     let delim_str = String.drop_prefix s 8 in
     Char.of_string delim_str
-  with _ ->
-    match alg_type with
-    | _ -> ','
+  with _ -> ','
+
+let fail_string = "ERROR: Possible delimiter, label, or header problem. Make sure --delim, --has-labels, and --has-header are set correctly"
 
 let process_file_float () : FloatMatrix.t =
   let process_line (line : string) : float list = 
-    let raw_charnums = String.split (String.strip line) ~on:delim in
-    let charnums = match raw_charnums with
-      | _ :: tl -> if labels then tl else raw_charnums
-      | [] -> failwith "Error: empty line"
-    in 
-    List.map charnums ~f:Float.of_string
+    try
+      let raw_charnums = String.split (String.strip line) ~on:delim in
+      let charnums = match raw_charnums with
+	| _ :: tl -> if labels then tl else raw_charnums
+	| [] -> failwith "Error: empty line"
+      in 
+      List.map charnums ~f:Float.of_string
+    with _ -> failwith fail_string
   in
-  if cartesian then
-    FloatToGraph.to_graph (List.map lines ~f:process_line)
-  else 
+  if matrix then
     FloatMatrix.of_list (List.map lines ~f:process_line)
+  else 
+    FloatToGraph.to_graph (List.map lines ~f:process_line)
 
 let process_file_int () : IntMatrix.t =
   let process_line (line : string) : float list = 
-    let raw_charnums = String.split (String.strip line) ~on:delim in
-    let charnums = match raw_charnums with
-      | _ :: tl -> if labels then tl else raw_charnums
-      | [] -> failwith "Error: empty line"
-    in 
-    List.map charnums ~f:Float.of_string
+    try
+      let raw_charnums = String.split (String.strip line) ~on:delim in
+      let charnums = match raw_charnums with
+	| _ :: tl -> if labels then tl else raw_charnums
+	| [] -> failwith "Error: empty line"
+      in 
+      List.map charnums ~f:Float.of_string
+    with _ -> failwith fail_string
   in
   let lsts = List.map lines ~f:process_line in
-  if cartesian then
-    IntToGraph.to_graph lsts
-  else
+  if matrix then
     IntMatrix.of_list (List.map lsts
 			 ~f:(fun lst -> List.map lst ~f:Int.of_float))
+  else
+    IntToGraph.to_graph lsts
 
 let get_labels : string array =
   let lines_arr = List.to_array lines in
@@ -215,7 +211,7 @@ let _ = match matrix_type, alg_type with
   | "int", "markov" ->
     let mat = process_file_int () in
     let clusts = IntMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
-    print_string "Clustering:\n";
+    print_string "Clustering:\n\n";
     print_clusters clusts;
     print_string "Density (lower numbers -> more dense, None is bad):\n";
     let dense_vals = IntStats.avg_dist_all mat clusts in
@@ -228,7 +224,7 @@ let _ = match matrix_type, alg_type with
   | "float", "markov" ->
     let mat = process_file_float () in
     let clusts = FloatMarkov.cluster (Markov (arg1,arg2,verbose)) mat in
-    print_string "Clustering:\n";
+    print_string "Clustering:\n\n";
     print_clusters clusts;
     print_string "Density (lower numbers -> more dense, None is bad):\n";
     let dense_vals = FloatStats.avg_dist_all mat clusts in
@@ -241,7 +237,7 @@ let _ = match matrix_type, alg_type with
   | "int", "kruskal" ->
     let mat = process_file_int () in
     let clusts = IntKruskal.cluster (Kruskal arg1) mat in
-    print_string "Clustering:\n";
+    print_string "Clustering:\n\n";
     print_clusters clusts;
     print_string "Density (lower numbers -> more dense, None is bad):\n";
     let dense_vals = IntStats.avg_dist_all mat clusts in
@@ -254,7 +250,7 @@ let _ = match matrix_type, alg_type with
   | "float", "kruskal" ->
     let mat = process_file_float () in
     let clusts = FloatKruskal.cluster (Kruskal arg1) mat in
-    print_string "Clustering:\n";
+    print_string "Clustering:\n\n";
     print_clusters clusts;
     print_string "Density (lower numbers -> more dense, None is bad):\n";
     let dense_vals = FloatStats.avg_dist_all mat clusts in

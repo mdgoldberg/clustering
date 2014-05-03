@@ -101,8 +101,6 @@ struct
     in unique (List.filter_map (loop 0 []) ~f:(fun cl ->
       if (cl = []) then None else Some (List.sort cl ~cmp:(-))))
 
-
-  (* has_converged doesn't work in cyclic case - maybe change last_matrix to a FloatMatrix.t ref list *)
   let last_matrix = ref (FloatMatrix.of_list [[]])
   let has_converged m = m = (!last_matrix)
 
