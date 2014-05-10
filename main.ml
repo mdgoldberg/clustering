@@ -34,7 +34,14 @@ struct
   let float_of_t t = t
   let t_of_float f = f
 end
-
+(*
+module StringCompare : COMPARABLE with type t = string =
+struct
+  type t = string
+  let zero = ""
+  let compare a b = 
+    let multiply 
+*)
 
 module IntMatrix = ArrayMatrix(IntCompare)
 module FloatMatrix = ArrayMatrix(FloatCompare)
@@ -142,7 +149,9 @@ let delim : char =
     Char.of_string delim_str
   with _ -> ','
 
-let fail_string = "ERROR: Possible delimiter, label, or header problem. Make sure --delim, --has-labels, and --has-header are set correctly"
+let fail_string = 
+  "ERROR: Label, header, or some file-reading problem." ^
+    " Make sure --has-labels and --has-header are set correctly"
 
 let process_file_float () : FloatMatrix.t =
   let process_line (line : string) : float list = 
@@ -151,7 +160,7 @@ let process_file_float () : FloatMatrix.t =
       let charnums = match raw_charnums with
 	| _ :: tl -> if labels then tl else raw_charnums
 	| [] -> failwith "Error: empty line"
-      in 
+      in
       List.map charnums ~f:Float.of_string
     with _ -> failwith fail_string
   in
@@ -186,7 +195,9 @@ let get_labels : string array =
       let len = String.length line in
       String.drop_suffix line (len - comma_ind)
     in 
-    Array.map lines_arr ~f:proc_line
+    try
+      Array.map lines_arr ~f:proc_line
+    with _ -> failwith "delimiter problem"
   else 
     Array.mapi lines_arr ~f:(fun i _ -> Int.to_string i)
     
@@ -211,28 +222,48 @@ let rec print_float_opts (lst : float option list) : unit =
     print_float_opts tl
   | [] -> print_string "\n"
 
+let print_avg opt_vals =
+  let vals = List.filter_map opt_vals ~f:(fun x -> x) in
+  let sum = List.fold_left vals ~f:(+.) ~init:0. in
+  let len = Float.of_int (List.length vals) in
+  Printf.printf "Average: %f\n" (sum /. len)
+
 let print_results_int mat clusts =
-    print_string "Clustering:\n\n";
-    print_clusters clusts;
-    print_string "Density (lower numbers -> more dense, None is bad):\n";
-    let dense_vals = IntStats.avg_dist_all mat clusts in
-    print_float_opts dense_vals;
-    print_string "Spread (higher numbers -> more spread, None is good):\n";
-    let spread_vals = IntStats.dist_between_all mat clusts in
-    if List.length spread_vals > 0 then
-      print_float_opts spread_vals
-    else print_string "Only 1 cluster.\n"
+  print_string "Clustering:\n";
+  Printf.printf "Number of clusters: %d\n\n" (List.length clusts);
+  print_clusters clusts;
+  print_string ("Density (lower numbers -> more dense (good), " ^
+    "None is bad for cluster of size > 1):\n");
+  let dense_vals = IntStats.avg_dist_all mat clusts in
+  print_float_opts dense_vals;
+  print_avg dense_vals;
+  print_string ("Spread (higher numbers -> more spread (good)," ^ 
+    "None is good):\n");
+  let spread_vals = IntStats.dist_between_all mat clusts in
+  if List.length spread_vals > 0 then
+    begin 
+      print_float_opts spread_vals;
+      print_avg spread_vals;
+    end 
+  else print_string "Only 1 cluster.\n"
 
 let print_results_float mat clusts =
-  print_string "Clustering:\n\n";
+  print_string "Clustering:\n";
+  Printf.printf "Number of clusters: %d\n\n" (List.length clusts);
   print_clusters clusts;
-  print_string "Density (lower numbers -> more dense, None is bad):\n";
+  print_string ("Density (lower numbers -> more dense (good), " ^
+    "None is bad for cluster of size > 1):\n");
   let dense_vals = FloatStats.avg_dist_all mat clusts in
   print_float_opts dense_vals;
-  print_string "Spread (higher numbers -> more spread, None is good):\n";
+  print_avg dense_vals;
+  print_string ("Spread (higher numbers -> more spread (good)," ^ 
+    "None is good):\n");
   let spread_vals = FloatStats.dist_between_all mat clusts in
   if List.length spread_vals > 0 then
-    print_float_opts spread_vals
+    begin 
+      print_float_opts spread_vals;
+      print_avg spread_vals
+    end
   else print_string "Only 1 cluster.\n"
 
 let _ = match matrix_type, alg_type with

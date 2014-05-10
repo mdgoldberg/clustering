@@ -46,7 +46,8 @@ sig
   (*creates a matrix out of list of lists*)
   val of_list : elt list list -> t
 
-  (* creates a matrix with given dimensions. Initial values are undefined behavior *)
+  (* creates a matrix with given dimensions. Initial values are
+     undefined behavior *)
   val of_dimensions : (int * int) -> t
 
   (*multiplies two matrices together*)
@@ -65,7 +66,7 @@ sig
   val dimensions : t -> (int * int)
 
   (*returns the smallest non-zero element of a matrix*)
-  val minimum : t -> elt
+  val maximum : t -> elt
 
   (*since matrices are abstract, this function prints them out*)
   val print : t  -> unit

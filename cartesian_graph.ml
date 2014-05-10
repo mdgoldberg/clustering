@@ -10,7 +10,7 @@ module Cartesian : TO_GRAPH =
   (* INVARIANTS: 
    *  1 - All the elements of the list must be of the same dimension
    *  2 - The list must contain more than 1 element
-   *      *)
+   *)
   
   
   (*function to calculate distances*)

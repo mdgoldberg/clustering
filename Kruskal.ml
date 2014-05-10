@@ -47,7 +47,8 @@ struct
       | 0 -> [0]
       | _ -> n :: (sizes (n-1)) in
     let span_weight = (List.fold_left ~f: (+) ~init: 0 (sizes size)) in
-    List.exists trees ~f:(fun xs -> (List.fold ~f: (+) ~init: 0 xs) = span_weight)
+    List.exists trees
+      ~f:(fun xs -> (List.fold ~f: (+) ~init: 0 xs) = span_weight)
 		
   (* Modified Kruskal's algorithm *)
   let cluster (args: cluster_args_t) (m : M.t) : int list list =
@@ -60,30 +61,36 @@ struct
     let forest = make_forest (size - 1) in
     let links = 0 in
     let max_links = size - n in
-    let spanning (forest: int list list) (edges: (elt * int * int) Heap.t) : int list list = 
-      let rec while_loop (forest': int list list) (edges': (elt * int * int) Heap.t) (links': int) : int list list =
-	if Heap.is_empty edges' || is_spanning forest' (size - 1) || (links' >= max_links)
+    let spanning (forest: int list list)
+	(edges: (elt * int * int) Heap.t) : int list list = 
+      let rec while_loop (forest': int list list)
+	  (edges': (elt * int * int) Heap.t) (links': int) : int list list =
+	if Heap.is_empty edges' || is_spanning forest' (size - 1)
+	  || (links' >= max_links)
 	then forest'
 	else
 	(match Heap.top edges' with
 	 | None -> let _ = Heap.remove_top edges' in
 		   while_loop forest' edges' links'
-	 | Some (_, v1, v2)-> (match List.find forest' ~f:(fun x -> List.mem x v1) with
-			       | None -> let _ = Heap.remove_top edges' in
-					 while_loop forest' edges' links'
-			       | Some xs -> if (List.mem xs v2)
-					      then let _ = Heap.remove_top edges' in 
-						   while_loop forest' edges' links'
-					      else (match List.find forest' ~f:(fun x -> List.mem x v2) with
-						    | None -> let _ = Heap.remove_top edges' in
-							      while_loop forest' edges' links'
-						    | Some ys ->
-						   let forest_added = (List.append xs ys) :: forest' in
-						   let forest_removed = List.filter ~f:(fun x -> x <> xs && x <> ys) forest_added in
-						   Heap.remove_top edges';
-						   while_loop forest_removed edges' (links' + 1))))
+	 | Some (_, v1, v2)->
+	   (match List.find forest' ~f:(fun x -> List.mem x v1) with
+	   | None -> let _ = Heap.remove_top edges' in
+		     while_loop forest' edges' links'
+	   | Some xs -> if (List.mem xs v2)
+	     then let _ = Heap.remove_top edges' in 
+		  while_loop forest' edges' links'
+	     else
+	       (match List.find forest' ~f:(fun x -> List.mem x v2) with
+	       | None -> let _ = Heap.remove_top edges' in
+			 while_loop forest' edges' links'
+	       | Some ys ->
+		 let forest_added = (List.append xs ys) :: forest' in
+		 let forest_removed = List.filter
+		   ~f:(fun x -> x <> xs && x <> ys) forest_added in
+		 Heap.remove_top edges';
+		 while_loop forest_removed edges' (links' + 1))))
       in
-    while_loop forest edges links
+      while_loop forest edges links
     in
     spanning forest edges
 end

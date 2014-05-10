@@ -1,3 +1,24 @@
+INSTALLATION:
+
+First things first: enter the code directory and type "make". This
+will compile our .ml files.
+
+To run the program, just use ./main.native with all necessary options (see
+below). We have provided three simple, example csv files, called example1.csv,
+example2.csv, and example3.csv. The following commands will run our algorithms
+on these files: 
+
+./main.native ../data/example1.csv --has-labels int kruskal|markov
+./main.native ../data/example2.csv --has-labels --matrix int kruskal|markov
+./main.native ../data/example3.csv --has-labels int kruskal|markov
+
+where kruskal|markov means either type kruskal or type markov (NOT BOTH),
+depending on which you want to run.
+
+Any of the above commands can also be given additional options, such as --arg1,
+--arg2, and --verbose (see below).
+
+
 USAGE: ./main.native csvfile float|int kruskal|markov [options]
 
 VALID OPTIONS:

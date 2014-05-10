@@ -51,14 +51,14 @@ module ArrayMatrix (C : COMPARABLE) : MATRIX with type elt = C.t =
   let set ((r, c) : (int * int)) (m : t) (new_elt : elt) : unit =
     m.(r).(c) <- new_elt
 
-  let minimum (m : t) : elt =
-    let minval a b = match C.compare a b with
-      | Greater -> b
-      | Equal | Less -> a
+  let maximum (m : t) : elt =
+    let maxval a b = match C.compare a b with
+      | Greater -> a
+      | Equal | Less -> b
     in 
     Array.fold_right m ~init:m.(0).(0) ~f:(fun x r ->
-      minval r (Array.fold_right x ~init:x.(0) ~f:(fun x' r' ->
-	minval x' r')))
+      maxval r (Array.fold_right x ~init:x.(0) ~f:(fun x' r' ->
+	maxval x' r')))
 
   let print (m: t) : unit = 
     let print_row (row : elt array) =
@@ -136,7 +136,7 @@ assert(M.multiply (M.of_list [[1;2;3;4];[5;6;7;8]])
        = (M.of_list [[130;140];[322;348]]));;
 
 let t = M.of_list [[9;10];[11;12];[-1;14];[15;16]] in
-assert(M.minimum t = -1);;
+assert(M.maximum t = 16);;
 assert(M.get_column (M.of_list [[9;10];[11;12];[13;14];[15;16]]) 0 =
       [|9;11;13;15|]);;
 assert(M.get_column (M.of_list [[1;2;3;4];[5;6;7;8]]) 3  = [|4;8|]);;
