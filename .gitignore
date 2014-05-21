@@ -8,4 +8,3 @@ video\ and\ audio/
 *.zip
 .DS_Store
 check_width
-*.csv
