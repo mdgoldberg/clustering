@@ -7,3 +7,5 @@ video\ and\ audio/
 *.doc
 *.zip
 .DS_Store
+check_width
+*.csv
