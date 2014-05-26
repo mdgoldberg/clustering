@@ -1,7 +1,7 @@
 open Core.Std
 open Signatures
 open Matrix
-open Cartesian_graph (* Is this a problem? *)
+open Cartesian_graph 
 
 module Markov : CLUSTER =
   functor (MatrixMod : MATRIX) ->
