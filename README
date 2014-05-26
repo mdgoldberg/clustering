@@ -44,6 +44,7 @@ Kruskal's algorithm will ignore this flag.
 If this flag is set, then the csv file has labels in its first column. We take
 this into account by skipping the first column during calculation, and then
 using these labels as names for each node when we output the results.
+NOTE: LABELS CANNOT HAVE THE DELIMITER CHARACTER IN THEM.
 
 --has-header
 If this flag is set, then the csv file has category headers in its first row. We
