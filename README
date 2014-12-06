@@ -1,7 +1,14 @@
+This was my final project for CS51. I worked in a group with two friends in the
+course; I implemented all of the Markov clustering algorithm (found in
+markov.ml), parts of the matrix module (found in matrix.ml), and all of the
+main script (found in main.ml). We wrote the signatures.ml file together, which
+provides signatures for the modules we used.
+
 INSTALLATION:
 
 First things first: enter the code directory and type "make". This
-will compile our .ml files.
+will compile our .ml files (this Makefile uses the corebuild tool to compile
+OCaml files).
 
 To run the program, just use ./main.native with all necessary options (see
 below). We have provided three simple, example csv files, called example1.csv,

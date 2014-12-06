@@ -237,7 +237,7 @@ let print_results_int mat clusts =
   let dense_vals = IntStats.avg_dist_all mat clusts in
   print_float_opts dense_vals;
   print_avg dense_vals;
-  print_string ("Spread (higher numbers -> more spread (good)," ^ 
+  print_string ("Spread (higher numbers -> more spread (good), " ^ 
     "None is good):\n");
   let spread_vals = IntStats.dist_between_all mat clusts in
   if List.length spread_vals > 0 then
